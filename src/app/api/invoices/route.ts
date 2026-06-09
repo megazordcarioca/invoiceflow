@@ -24,7 +24,7 @@ export async function POST(request: Request) {
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const now = new Date();
-  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+  const startOfMonth = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1)).toISOString();
 
   const { count } = await supabase
     .from('invoices')
@@ -33,8 +33,15 @@ export async function POST(request: Request) {
     .gte('created_at', startOfMonth);
 
   if (count !== null && count >= FREE_TIER_LIMIT) {
+    const remaining = Math.max(0, FREE_TIER_LIMIT - count);
     return NextResponse.json(
-      { error: 'Free tier limit reached', limit: FREE_TIER_LIMIT, current: count },
+      { 
+        error: 'Free tier limit reached', 
+        limit: FREE_TIER_LIMIT, 
+        current: count,
+        remaining,
+        upgradeUrl: '/pricing'
+      },
       { status: 403 }
     );
   }
