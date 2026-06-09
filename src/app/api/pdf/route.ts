@@ -42,7 +42,6 @@ export async function GET(request: Request) {
     },
   });
 
-  // @ts-expect-error renderToBuffer expects DocumentProps but InvoicePDF wraps Document internally
   const buffer = await renderToBuffer(pdfElement);
 
   const clientName = invoice.client_name.replace(/[^a-zA-Z0-9]/g, '_');
