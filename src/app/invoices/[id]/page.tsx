@@ -11,6 +11,8 @@ export default function InvoiceDetailPage() {
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [reminderMsg, setReminderMsg] = useState('');
+  const [reminderCount, setReminderCount] = useState(0);
+  const [lastReminder, setLastReminder] = useState<{ sent_at: string } | null>(null);
   const supabase = createClient();
   const router = useRouter();
   const params = useParams();
@@ -18,6 +20,7 @@ export default function InvoiceDetailPage() {
 
   useEffect(() => {
     fetchInvoice();
+    fetchReminders();
   }, [id]);
 
   const fetchInvoice = async () => {
@@ -28,6 +31,20 @@ export default function InvoiceDetailPage() {
       .single();
     setInvoice(data);
     setLoading(false);
+  };
+
+  const fetchReminders = async () => {
+    const { data } = await supabase
+      .from('reminders')
+      .select('sent_at')
+      .eq('invoice_id', id)
+      .eq('status', 'sent')
+      .order('sent_at', { ascending: false });
+    
+    if (data && data.length > 0) {
+      setReminderCount(data.length);
+      setLastReminder(data[0]);
+    }
   };
 
   const today = new Date().toISOString().split('T')[0];
@@ -53,6 +70,10 @@ export default function InvoiceDetailPage() {
     const data = await res.json();
     if (res.ok) {
       setReminderMsg(data.status === 'sent' ? 'Reminder sent!' : 'Failed to send reminder (no email provider configured)');
+      fetchReminders();
+    } else if (res.status === 429 && data.nextAvailable) {
+      const nextDate = new Date(data.nextAvailable);
+      setReminderMsg(`Rate limited. Next reminder available: ${nextDate.toLocaleDateString()} ${nextDate.toLocaleTimeString()}`);
     } else {
       setReminderMsg(data.error || 'Failed');
     }
@@ -96,14 +117,21 @@ export default function InvoiceDetailPage() {
         <div className="flex justify-between items-start mb-6">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">{invoice.invoice_number}</h1>
-            <span className={`inline-block mt-2 px-2 py-1 text-xs font-medium rounded-full ${
-              computedStatus === 'paid' ? 'bg-green-100 text-green-800' :
-              computedStatus === 'overdue' ? 'bg-red-100 text-red-800' :
-              computedStatus === 'sent' ? 'bg-blue-100 text-blue-800' :
-              'bg-gray-100 text-gray-800'
-            }`}>
-              {computedStatus?.charAt(0).toUpperCase()}{computedStatus?.slice(1)}
-            </span>
+            <div className="flex items-center gap-2 mt-2">
+              <span className={`inline-block px-2 py-1 text-xs font-medium rounded-full ${
+                computedStatus === 'paid' ? 'bg-green-100 text-green-800' :
+                computedStatus === 'overdue' ? 'bg-red-100 text-red-800' :
+                computedStatus === 'sent' ? 'bg-blue-100 text-blue-800' :
+                'bg-gray-100 text-gray-800'
+              }`}>
+                {computedStatus?.charAt(0).toUpperCase()}{computedStatus?.slice(1)}
+              </span>
+              {reminderCount > 0 && (
+                <span className="inline-block px-2 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800">
+                  {reminderCount} reminder{reminderCount !== 1 ? 's' : ''} sent
+                </span>
+              )}
+            </div>
           </div>
           <div className="flex gap-2">
             <button
@@ -136,13 +164,20 @@ export default function InvoiceDetailPage() {
               </button>
             )}
             {computedStatus === 'overdue' && (
-              <button
-                onClick={handleSendReminder}
-                disabled={sending}
-                className="px-3 py-2 bg-yellow-500 text-white rounded-md text-sm hover:bg-yellow-600 disabled:opacity-50"
-              >
-                {sending ? 'Sending...' : 'Send Reminder'}
-              </button>
+              <div className="relative group">
+                <button
+                  onClick={handleSendReminder}
+                  disabled={sending || Boolean(lastReminder && (Date.now() - new Date(lastReminder.sent_at).getTime() < 7 * 24 * 60 * 60 * 1000))}
+                  className="px-3 py-2 bg-yellow-500 text-white rounded-md text-sm hover:bg-yellow-600 disabled:opacity-50"
+                >
+                  {sending ? 'Sending...' : 'Send Reminder'}
+                </button>
+                {lastReminder && (Date.now() - new Date(lastReminder.sent_at).getTime() < 7 * 24 * 60 * 60 * 1000) && (
+                  <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                    Next reminder available: {new Date(new Date(lastReminder.sent_at).getTime() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString()}
+                  </div>
+                )}
+              </div>
             )}
             {invoice.status === 'draft' && (
               <button

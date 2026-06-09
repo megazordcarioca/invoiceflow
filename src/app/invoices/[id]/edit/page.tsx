@@ -24,6 +24,8 @@ export default function EditInvoicePage() {
     notes: '',
     line_items: [] as LineItem[],
   });
+  const [invoiceStatus, setInvoiceStatus] = useState<string>('draft');
+  const isSent = invoiceStatus === 'sent';
 
   useEffect(() => {
     const load = async () => {
@@ -33,6 +35,7 @@ export default function EditInvoicePage() {
         .eq('id', id)
         .single();
       if (data) {
+        setInvoiceStatus(data.status);
         setForm({
           client_name: data.client_name,
           client_email: data.client_email,
@@ -107,6 +110,13 @@ export default function EditInvoicePage() {
       <main className="max-w-3xl mx-auto py-6 sm:px-6 lg:px-8">
         <h1 className="text-2xl font-bold text-gray-900 mb-6">Edit Invoice</h1>
 
+        {isSent && (
+          <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <p className="text-yellow-800 font-medium">This invoice has been sent. Client info and line items are locked.</p>
+            <p className="text-yellow-700 text-sm mt-1">You can still edit notes and due date.</p>
+          </div>
+        )}
+
         {error && (
           <div className="mb-6 p-3 bg-red-50 border border-red-200 text-red-700 rounded text-sm">{error}</div>
         )}
@@ -118,9 +128,10 @@ export default function EditInvoicePage() {
               <input
                 type="text"
                 required
+                disabled={isSent}
                 value={form.client_name}
                 onChange={(e) => setForm({ ...form, client_name: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
               />
             </div>
             <div>
@@ -128,9 +139,10 @@ export default function EditInvoicePage() {
               <input
                 type="email"
                 required
+                disabled={isSent}
                 value={form.client_email}
                 onChange={(e) => setForm({ ...form, client_email: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
               />
             </div>
           </div>
@@ -139,9 +151,10 @@ export default function EditInvoicePage() {
             <label className="block text-sm font-medium text-gray-700 mb-1">Client Address</label>
             <input
               type="text"
+              disabled={isSent}
               value={form.client_address}
               onChange={(e) => setForm({ ...form, client_address: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
             />
           </div>
 
@@ -181,7 +194,9 @@ export default function EditInvoicePage() {
           <div>
             <div className="flex justify-between items-center mb-3">
               <label className="block text-sm font-medium text-gray-700">Line Items *</label>
-              <button type="button" onClick={addLine} className="text-sm text-blue-600 hover:underline">+ Add Item</button>
+              {!isSent && (
+                <button type="button" onClick={addLine} className="text-sm text-blue-600 hover:underline">+ Add Item</button>
+              )}
             </div>
             <div className="space-y-3">
               {form.line_items.map((item, i) => (
@@ -190,18 +205,20 @@ export default function EditInvoicePage() {
                     type="text"
                     placeholder="Description"
                     required
+                    disabled={isSent}
                     value={item.description}
                     onChange={(e) => updateLine(i, 'description', e.target.value)}
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
                   />
                   <input
                     type="number"
                     placeholder="Qty"
                     required
                     min="1"
+                    disabled={isSent}
                     value={item.quantity}
                     onChange={(e) => updateLine(i, 'quantity', parseInt(e.target.value) || 1)}
-                    className="w-20 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-20 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
                   />
                   <input
                     type="number"
@@ -209,12 +226,13 @@ export default function EditInvoicePage() {
                     required
                     min="0"
                     step="0.01"
+                    disabled={isSent}
                     value={item.unit_price || ''}
                     onChange={(e) => updateLine(i, 'unit_price', parseFloat(e.target.value) || 0)}
-                    className="w-28 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-28 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
                   />
                   <span className="py-2 text-sm text-gray-600 w-24 text-right">${(item.quantity * item.unit_price).toFixed(2)}</span>
-                  {form.line_items.length > 1 && (
+                  {!isSent && form.line_items.length > 1 && (
                     <button type="button" onClick={() => removeLine(i)} className="py-2 text-red-500 hover:text-red-700">×</button>
                   )}
                 </div>

@@ -51,6 +51,14 @@ export async function POST(
     }
   }
 
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('name')
+    .eq('id', user.id)
+    .single();
+
+  const freelancerName = profile?.name || user.email || 'InvoiceFlow';
+
   let status = 'sent';
 
   if (resend) {
@@ -58,7 +66,7 @@ export async function POST(
       await resend.emails.send({
         from: 'InvoiceFlow <onboarding@resend.dev>',
         to: invoice.client_email,
-        subject: `Payment Reminder: ${invoice.invoice_number}`,
+        subject: `Payment Reminder: ${invoice.invoice_number} from ${freelancerName}`,
         html: `
           <h2>Payment Reminder</h2>
           <p>This is a friendly reminder that invoice <strong>${invoice.invoice_number}</strong> for <strong>$${invoice.line_items?.reduce((sum: number, item: { quantity: number; unit_price: number }) => sum + item.quantity * item.unit_price, 0).toFixed(2) || '0.00'}</strong> is overdue.</p>
@@ -66,7 +74,7 @@ export async function POST(
           <p>Due date: ${invoice.due_date}</p>
           ${invoice.notes ? `<p>Notes: ${invoice.notes}</p>` : ''}
           <p>Please arrange payment at your earliest convenience.</p>
-          <p>Thank you,<br>InvoiceFlow</p>
+          <p>Thank you,<br>${freelancerName}</p>
         `,
       });
     } catch {
