@@ -12,6 +12,9 @@ export default function NewInvoicePage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [tierWarning, setTierWarning] = useState('');
+  const [tierCount, setTierCount] = useState(0);
+  const [tierLimit, setTierLimit] = useState(3);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
   const [form, setForm] = useState({
     client_name: '',
@@ -53,7 +56,19 @@ export default function NewInvoicePage() {
 
     if (!res.ok) {
       if (res.status === 403 && data.error === 'Free tier limit reached') {
-        setTierWarning(`You've reached the free tier limit of ${data.limit} invoices this month. Upgrade to Pro for unlimited invoices.`);
+        const count = data.current || 0;
+        const limit = data.limit || 3;
+        setTierCount(count);
+        setTierLimit(limit);
+        
+        if (count >= limit + 1) {
+          setShowUpgradeModal(true);
+        } else if (count === limit) {
+          setTierWarning(`You have used all ${limit} free invoices for this month`);
+        } else if (count === limit - 1) {
+          setTierWarning(`1 invoice remaining this month`);
+        }
+        
         setLoading(false);
         return;
       }
@@ -82,9 +97,54 @@ export default function NewInvoicePage() {
         <h1 className="text-2xl font-bold text-gray-900 mb-6">New Invoice</h1>
 
         {tierWarning && (
-          <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-            <p className="text-yellow-800 font-medium">{tierWarning}</p>
-            <p className="text-yellow-700 text-sm mt-1">Your existing invoices remain accessible.</p>
+          <div className={`mb-6 p-4 rounded-lg ${
+            tierCount === tierLimit - 1 
+              ? 'bg-blue-50 border border-blue-200' 
+              : 'bg-yellow-50 border border-yellow-200'
+          }`}>
+            <p className={`font-medium ${
+              tierCount === tierLimit - 1 ? 'text-blue-800' : 'text-yellow-800'
+            }`}>
+              {tierWarning}
+            </p>
+            <p className={`text-sm mt-1 ${
+              tierCount === tierLimit - 1 ? 'text-blue-700' : 'text-yellow-700'
+            }`}>
+              Your existing invoices remain accessible.
+            </p>
+          </div>
+        )}
+
+        {showUpgradeModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 p-6">
+              <h3 className="text-lg font-bold text-gray-900 mb-2">
+                Upgrade to Pro
+              </h3>
+              <p className="text-gray-600 mb-4">
+                You&apos;ve used all {tierLimit} free invoices for this month. 
+                Upgrade to Pro for unlimited invoices and premium features.
+              </p>
+              <ul className="text-sm text-gray-600 mb-6 space-y-1">
+                <li>✓ Unlimited invoices per month</li>
+                <li>✓ Custom invoice templates</li>
+                <li>✓ Priority support</li>
+              </ul>
+              <div className="flex gap-3">
+                <Link
+                  href="/pricing"
+                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-center"
+                >
+                  View Plans
+                </Link>
+                <button
+                  onClick={() => setShowUpgradeModal(false)}
+                  className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+                >
+                  Maybe Later
+                </button>
+              </div>
+            </div>
           </div>
         )}
 
