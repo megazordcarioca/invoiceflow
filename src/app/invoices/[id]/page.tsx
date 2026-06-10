@@ -2,7 +2,7 @@
 
 export const dynamic = "force-dynamic";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
@@ -30,12 +30,7 @@ export default function InvoiceDetailPage() {
   const params = useParams();
   const id = (params?.id as string) ?? "";
 
-  useEffect(() => {
-    fetchInvoice();
-    fetchReminders();
-  }, [id]);
-
-  const fetchInvoice = async () => {
+  const fetchInvoice = useCallback(async () => {
     const { data } = await supabase
       .from("invoices")
       .select("*, invoice_line_items(*)")
@@ -43,9 +38,9 @@ export default function InvoiceDetailPage() {
       .single();
     setInvoice(data);
     setLoading(false);
-  };
+  }, [id, supabase]);
 
-  const fetchReminders = async () => {
+  const fetchReminders = useCallback(async () => {
     const { data } = await supabase
       .from("reminders")
       .select("sent_at")
@@ -57,7 +52,12 @@ export default function InvoiceDetailPage() {
       setReminderCount(data.length);
       setLastReminder(data[0]);
     }
-  };
+  }, [id, supabase]);
+
+  useEffect(() => {
+    fetchInvoice();
+    fetchReminders();
+  }, [fetchInvoice, fetchReminders]);
 
   const today = new Date().toISOString().split("T")[0];
   const computedStatus =
