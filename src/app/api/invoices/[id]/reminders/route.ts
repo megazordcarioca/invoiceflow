@@ -1,10 +1,23 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
-import { Resend } from "resend";
+import nodemailer from "nodemailer";
 
-const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
-const RESEND_FROM_EMAIL = process.env.RESEND_FROM_EMAIL || "InvoiceFlow <onboarding@resend.dev>";
 const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
+
+function createTransporter() {
+  const host = process.env.SMTP_HOST;
+  if (!host) return null;
+  return nodemailer.createTransport({
+    host,
+    port: parseInt(process.env.SMTP_PORT || "587", 10),
+    secure: process.env.SMTP_SECURE === "true",
+    auth: process.env.SMTP_USER
+      ? { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS || "" }
+      : undefined,
+  });
+}
+
+const FROM_EMAIL = process.env.SMTP_FROM || "InvoiceFlow <noreply@invoiceflow.app>";
 
 export async function POST(_request: Request, { params }: { params: { id: string } }) {
   const supabase = createClient();
@@ -64,7 +77,8 @@ export async function POST(_request: Request, { params }: { params: { id: string
 
   let status = "sent";
 
-  if (resend) {
+  const transporter = createTransporter();
+  if (transporter) {
     try {
       console.log(
         "[reminders] Sending reminder email for invoice",
@@ -72,13 +86,13 @@ export async function POST(_request: Request, { params }: { params: { id: string
         "to",
         invoice.client_email
       );
-      await resend.emails.send({
-        from: RESEND_FROM_EMAIL,
+      await transporter.sendMail({
+        from: FROM_EMAIL,
         to: invoice.client_email,
         subject: `Payment Reminder: ${invoice.invoice_number} from ${freelancerName}`,
         html: `
           <h2>Payment Reminder</h2>
-          <p>This is a friendly reminder that invoice <strong>${invoice.invoice_number}</strong> for <strong>$${invoice.line_items?.reduce((sum: number, item: { quantity: number; unit_price: number }) => sum + item.quantity * item.unit_price, 0).toFixed(2) || "0.00"}</strong> is overdue.</p>
+          <p>This is a friendly reminder that invoice <strong>${invoice.invoice_number}</strong> is overdue.</p>
           <p>Client: ${invoice.client_name}</p>
           <p>Due date: ${invoice.due_date}</p>
           ${invoice.notes ? `<p>Notes: ${invoice.notes}</p>` : ""}
@@ -91,7 +105,7 @@ export async function POST(_request: Request, { params }: { params: { id: string
       status = "failed";
     }
   } else {
-    console.warn("[reminders] RESEND_API_KEY not configured — marking reminder as failed");
+    console.warn("[reminders] SMTP_HOST not configured — marking reminder as failed");
     status = "failed";
   }
 

@@ -22,7 +22,13 @@ export default function LoginForm() {
     });
 
     if (error) {
-      setError("Email or password incorrect");
+      if (error.message.includes("Email not confirmed")) {
+        setError("Please confirm your email before signing in. Check your inbox.");
+      } else if (error.message.includes("Invalid login credentials")) {
+        setError("Email or password incorrect");
+      } else {
+        setError(error.message);
+      }
       setLoading(false);
       return;
     }
