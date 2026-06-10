@@ -16,12 +16,26 @@ jobs:
           cache: npm
       - run: npm ci
       - name: Deploy to Vercel
+        id: deploy
         run: |
           if [ -z "$VERCEL_TOKEN" ]; then
             echo "VERCEL_TOKEN not set — skipping deploy"
             exit 0
           fi
-          npx vercel deploy --prod --token "$VERCEL_TOKEN" --yes
+          DEPLOY_URL=$(npx vercel deploy --prod --token "$VERCEL_TOKEN" --yes 2>&1 | tail -1)
+          echo "deploy_url=$DEPLOY_URL" >> "$GITHUB_OUTPUT"
+          echo "Deployed to: $DEPLOY_URL"
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: team_wdgHc2sjHegc2ZqCgDGV6mAm
+          VERCEL_PROJECT_ID: prj_JbOpIEnFNvBeT8s1iCW2VlBmzg8Z
+      - name: Assign production domain
+        if: steps.deploy.outputs.deploy_url != ''
+        run: |
+          echo "Attempting to assign invoiceflow.vercel.app as a domain..."
+          npx vercel domain add invoiceflow.vercel.app --token "$VERCEL_TOKEN" --yes 2>&1 || \
+            echo "Domain invoiceflow.vercel.app is already taken by another project."
+          echo "Actual production URL: ${{ steps.deploy.outputs.deploy_url }}"
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: team_wdgHc2sjHegc2ZqCgDGV6mAm
