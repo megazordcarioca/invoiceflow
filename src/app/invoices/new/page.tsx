@@ -1,28 +1,28 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import type { LineItem } from '@/types/invoice';
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import type { LineItem } from "@/types/invoice";
 
-const EMPTY_LINE: LineItem = { description: '', quantity: 1, unit_price: 0 };
+const EMPTY_LINE: LineItem = { description: "", quantity: 1, unit_price: 0 };
 
 export default function NewInvoicePage() {
   const router = useRouter();
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [tierWarning, setTierWarning] = useState('');
+  const [tierWarning, setTierWarning] = useState("");
   const [tierCount, setTierCount] = useState(0);
   const [tierLimit, setTierLimit] = useState(3);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
   const [form, setForm] = useState({
-    client_name: '',
-    client_email: '',
-    client_address: '',
-    issue_date: new Date().toISOString().split('T')[0],
-    due_date: '',
-    notes: '',
+    client_name: "",
+    client_email: "",
+    client_address: "",
+    issue_date: new Date().toISOString().split("T")[0],
+    due_date: "",
+    notes: "",
     line_items: [{ ...EMPTY_LINE }],
   });
 
@@ -42,25 +42,25 @@ export default function NewInvoicePage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
-    setTierWarning('');
+    setError("");
+    setTierWarning("");
     setLoading(true);
 
-    const res = await fetch('/api/invoices', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+    const res = await fetch("/api/invoices", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(form),
     });
 
     const data = await res.json();
 
     if (!res.ok) {
-      if (res.status === 403 && data.error === 'Free tier limit reached') {
+      if (res.status === 403 && data.error === "Free tier limit reached") {
         const count = data.current || 0;
         const limit = data.limit || 3;
         setTierCount(count);
         setTierLimit(limit);
-        
+
         if (count >= limit + 1) {
           setShowUpgradeModal(true);
         } else if (count === limit) {
@@ -68,11 +68,11 @@ export default function NewInvoicePage() {
         } else if (count === limit - 1) {
           setTierWarning(`1 invoice remaining this month`);
         }
-        
+
         setLoading(false);
         return;
       }
-      setError(data.error || 'Failed to create invoice');
+      setError(data.error || "Failed to create invoice");
       setLoading(false);
       return;
     }
@@ -86,8 +86,15 @@ export default function NewInvoicePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex items-center gap-6">
-              <Link href="/dashboard" className="text-xl font-bold text-gray-900">InvoiceFlow</Link>
-              <Link href="/invoices" className="text-sm font-medium text-gray-600 hover:text-gray-900">Invoices</Link>
+              <Link href="/dashboard" className="text-xl font-bold text-gray-900">
+                InvoiceFlow
+              </Link>
+              <Link
+                href="/invoices"
+                className="text-sm font-medium text-gray-600 hover:text-gray-900"
+              >
+                Invoices
+              </Link>
             </div>
           </div>
         </div>
@@ -97,19 +104,25 @@ export default function NewInvoicePage() {
         <h1 className="text-2xl font-bold text-gray-900 mb-6">New Invoice</h1>
 
         {tierWarning && (
-          <div className={`mb-6 p-4 rounded-lg ${
-            tierCount === tierLimit - 1 
-              ? 'bg-blue-50 border border-blue-200' 
-              : 'bg-yellow-50 border border-yellow-200'
-          }`}>
-            <p className={`font-medium ${
-              tierCount === tierLimit - 1 ? 'text-blue-800' : 'text-yellow-800'
-            }`}>
+          <div
+            className={`mb-6 p-4 rounded-lg ${
+              tierCount === tierLimit - 1
+                ? "bg-blue-50 border border-blue-200"
+                : "bg-yellow-50 border border-yellow-200"
+            }`}
+          >
+            <p
+              className={`font-medium ${
+                tierCount === tierLimit - 1 ? "text-blue-800" : "text-yellow-800"
+              }`}
+            >
               {tierWarning}
             </p>
-            <p className={`text-sm mt-1 ${
-              tierCount === tierLimit - 1 ? 'text-blue-700' : 'text-yellow-700'
-            }`}>
+            <p
+              className={`text-sm mt-1 ${
+                tierCount === tierLimit - 1 ? "text-blue-700" : "text-yellow-700"
+              }`}
+            >
               Your existing invoices remain accessible.
             </p>
           </div>
@@ -118,12 +131,10 @@ export default function NewInvoicePage() {
         {showUpgradeModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 p-6">
-              <h3 className="text-lg font-bold text-gray-900 mb-2">
-                Upgrade to Pro
-              </h3>
+              <h3 className="text-lg font-bold text-gray-900 mb-2">Upgrade to Pro</h3>
               <p className="text-gray-600 mb-4">
-                You&apos;ve used all {tierLimit} free invoices for this month. 
-                Upgrade to Pro for unlimited invoices and premium features.
+                You&apos;ve used all {tierLimit} free invoices for this month. Upgrade to Pro for
+                unlimited invoices and premium features.
               </p>
               <ul className="text-sm text-gray-600 mb-6 space-y-1">
                 <li>✓ Unlimited invoices per month</li>
@@ -149,7 +160,9 @@ export default function NewInvoicePage() {
         )}
 
         {error && (
-          <div className="mb-6 p-3 bg-red-50 border border-red-200 text-red-700 rounded text-sm">{error}</div>
+          <div className="mb-6 p-3 bg-red-50 border border-red-200 text-red-700 rounded text-sm">
+            {error}
+          </div>
         )}
 
         <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow p-6 space-y-6">
@@ -222,7 +235,11 @@ export default function NewInvoicePage() {
           <div>
             <div className="flex justify-between items-center mb-3">
               <label className="block text-sm font-medium text-gray-700">Line Items *</label>
-              <button type="button" onClick={addLine} className="text-sm text-blue-600 hover:underline">
+              <button
+                type="button"
+                onClick={addLine}
+                className="text-sm text-blue-600 hover:underline"
+              >
                 + Add Item
               </button>
             </div>
@@ -234,7 +251,7 @@ export default function NewInvoicePage() {
                     placeholder="Description"
                     required
                     value={item.description}
-                    onChange={(e) => updateLine(i, 'description', e.target.value)}
+                    onChange={(e) => updateLine(i, "description", e.target.value)}
                     className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                   <input
@@ -244,7 +261,7 @@ export default function NewInvoicePage() {
                     min="1"
                     step="1"
                     value={item.quantity}
-                    onChange={(e) => updateLine(i, 'quantity', parseInt(e.target.value) || 1)}
+                    onChange={(e) => updateLine(i, "quantity", parseInt(e.target.value) || 1)}
                     className="w-20 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                   <input
@@ -253,15 +270,19 @@ export default function NewInvoicePage() {
                     required
                     min="0"
                     step="0.01"
-                    value={item.unit_price || ''}
-                    onChange={(e) => updateLine(i, 'unit_price', parseFloat(e.target.value) || 0)}
+                    value={item.unit_price || ""}
+                    onChange={(e) => updateLine(i, "unit_price", parseFloat(e.target.value) || 0)}
                     className="w-28 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                   <span className="py-2 text-sm text-gray-600 w-24 text-right">
                     ${(item.quantity * item.unit_price).toFixed(2)}
                   </span>
                   {form.line_items.length > 1 && (
-                    <button type="button" onClick={() => removeLine(i)} className="py-2 text-red-500 hover:text-red-700">
+                    <button
+                      type="button"
+                      onClick={() => removeLine(i)}
+                      className="py-2 text-red-500 hover:text-red-700"
+                    >
                       ×
                     </button>
                   )}
@@ -274,7 +295,10 @@ export default function NewInvoicePage() {
           </div>
 
           <div className="flex justify-end gap-3">
-            <Link href="/invoices" className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
+            <Link
+              href="/invoices"
+              className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+            >
               Cancel
             </Link>
             <button
@@ -282,7 +306,7 @@ export default function NewInvoicePage() {
               disabled={loading}
               className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
             >
-              {loading ? 'Creating...' : 'Create Invoice'}
+              {loading ? "Creating..." : "Create Invoice"}
             </button>
           </div>
         </form>

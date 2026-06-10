@@ -1,8 +1,8 @@
-import { createClient } from '@/lib/supabase/server';
-import Link from 'next/link';
-import InvoiceListClient from '@/components/InvoiceListClient';
+import { createClient } from "@/lib/supabase/server";
+import Link from "next/link";
+import InvoiceListClient from "@/components/InvoiceListClient";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export default async function InvoicesPage() {
   const supabase = createClient();
@@ -24,7 +24,7 @@ export default async function InvoicesPage() {
           <div />
           <div className="flex items-center gap-4">
             <div className="w-8 h-8 rounded-full bg-primary-100 text-primary-600 flex items-center justify-center text-sm font-semibold">
-              {user?.email?.charAt(0).toUpperCase() || 'U'}
+              {user?.email?.charAt(0).toUpperCase() || "U"}
             </div>
           </div>
         </header>
@@ -49,13 +49,13 @@ export default async function InvoicesPage() {
 
 async function fetchInvoices(supabase: ReturnType<typeof createClient>, userId: string) {
   const { data, error } = await supabase
-    .from('invoices')
-    .select('*, line_items:invoice_line_items(*)')
-    .eq('user_id', userId)
-    .order('created_at', { ascending: false });
+    .from("invoices")
+    .select("*, line_items:invoice_line_items(*)")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false });
 
   if (error) {
-    console.error('Failed to fetch invoices:', error.message);
+    console.error("Failed to fetch invoices:", error.message);
     return [];
   }
 

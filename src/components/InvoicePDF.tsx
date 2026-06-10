@@ -1,25 +1,31 @@
-import React from 'react';
-import { Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer';
+import React from "react";
+import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
 
 const styles = StyleSheet.create({
-  page: { padding: 40, fontSize: 10, fontFamily: 'Helvetica' },
-  header: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 30 },
-  title: { fontSize: 24, fontWeight: 'bold', color: '#2563eb' },
+  page: { padding: 40, fontSize: 10, fontFamily: "Helvetica" },
+  header: { flexDirection: "row", justifyContent: "space-between", marginBottom: 30 },
+  title: { fontSize: 24, fontWeight: "bold", color: "#2563eb" },
   section: { marginBottom: 20 },
-  label: { fontSize: 9, color: '#6b7280', marginBottom: 2 },
+  label: { fontSize: 9, color: "#6b7280", marginBottom: 2 },
   value: { fontSize: 11, marginBottom: 8 },
-  row: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 4 },
-  tableHeader: { flexDirection: 'row', borderBottomWidth: 1, borderBottomColor: '#e5e7eb', paddingBottom: 6, marginBottom: 6 },
-  tableRow: { flexDirection: 'row', paddingBottom: 6, marginBottom: 6 },
-  colDesc: { width: '45%' },
-  colQty: { width: '15%', textAlign: 'right' },
-  colPrice: { width: '20%', textAlign: 'right' },
-  colTotal: { width: '20%', textAlign: 'right' },
-  totalSection: { borderTopWidth: 1, borderTopColor: '#e5e7eb', paddingTop: 10, marginTop: 10 },
-  totalLabel: { fontSize: 12, fontWeight: 'bold' },
-  totalValue: { fontSize: 14, fontWeight: 'bold', color: '#2563eb' },
-  footer: { marginTop: 40, paddingTop: 20, borderTopWidth: 1, borderTopColor: '#e5e7eb' },
-  footerText: { fontSize: 9, color: '#6b7280', textAlign: 'center' },
+  row: { flexDirection: "row", justifyContent: "space-between", marginBottom: 4 },
+  tableHeader: {
+    flexDirection: "row",
+    borderBottomWidth: 1,
+    borderBottomColor: "#e5e7eb",
+    paddingBottom: 6,
+    marginBottom: 6,
+  },
+  tableRow: { flexDirection: "row", paddingBottom: 6, marginBottom: 6 },
+  colDesc: { width: "45%" },
+  colQty: { width: "15%", textAlign: "right" },
+  colPrice: { width: "20%", textAlign: "right" },
+  colTotal: { width: "20%", textAlign: "right" },
+  totalSection: { borderTopWidth: 1, borderTopColor: "#e5e7eb", paddingTop: 10, marginTop: 10 },
+  totalLabel: { fontSize: 12, fontWeight: "bold" },
+  totalValue: { fontSize: 14, fontWeight: "bold", color: "#2563eb" },
+  footer: { marginTop: 40, paddingTop: 20, borderTopWidth: 1, borderTopColor: "#e5e7eb" },
+  footerText: { fontSize: 9, color: "#6b7280", textAlign: "center" },
 });
 
 interface Props {
@@ -51,7 +57,7 @@ export function InvoicePDF({ invoice }: Props) {
             <Text style={styles.title}>INVOICE</Text>
             <Text style={styles.value}>{invoice.invoice_number}</Text>
           </View>
-          <View style={{ textAlign: 'right' }}>
+          <View style={{ textAlign: "right" }}>
             <Text style={styles.label}>FROM</Text>
             <Text style={styles.value}>{invoice.freelancer_name}</Text>
             {invoice.freelancer_company && (
@@ -61,16 +67,14 @@ export function InvoicePDF({ invoice }: Props) {
         </View>
 
         <View style={styles.section}>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+          <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
             <View>
               <Text style={styles.label}>BILL TO</Text>
               <Text style={styles.value}>{invoice.client_name}</Text>
               <Text style={styles.value}>{invoice.client_email}</Text>
-              {invoice.client_address && (
-                <Text style={styles.value}>{invoice.client_address}</Text>
-              )}
+              {invoice.client_address && <Text style={styles.value}>{invoice.client_address}</Text>}
             </View>
-            <View style={{ textAlign: 'right' }}>
+            <View style={{ textAlign: "right" }}>
               <View style={styles.row}>
                 <Text style={styles.label}>Issue Date: </Text>
                 <Text style={styles.value}>{invoice.issue_date}</Text>
@@ -99,7 +103,7 @@ export function InvoicePDF({ invoice }: Props) {
             </View>
           ))}
           <View style={styles.totalSection}>
-            <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
+            <View style={{ flexDirection: "row", justifyContent: "flex-end" }}>
               <Text style={styles.totalLabel}>Total: </Text>
               <Text style={styles.totalValue}>${invoice.total.toFixed(2)}</Text>
             </View>

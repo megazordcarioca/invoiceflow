@@ -1,34 +1,34 @@
-'use client';
+"use client";
 
-import { useState, useMemo } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { Invoice, InvoiceStatus } from '@/types/invoice';
-import StatusBadge from './StatusBadge';
+import { useState, useMemo } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { Invoice, InvoiceStatus } from "@/types/invoice";
+import StatusBadge from "./StatusBadge";
 
-type SortField = 'invoice_number' | 'client_name' | 'amount' | 'issue_date' | 'due_date' | 'status';
-type SortDir = 'asc' | 'desc';
+type SortField = "invoice_number" | "client_name" | "amount" | "issue_date" | "due_date" | "status";
+type SortDir = "asc" | "desc";
 
 function computeDisplayStatus(invoice: Invoice): InvoiceStatus {
-  if (invoice.status === 'sent') {
+  if (invoice.status === "sent") {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const dueDate = new Date(invoice.due_date);
     dueDate.setHours(0, 0, 0, 0);
-    if (dueDate < today) return 'overdue';
+    if (dueDate < today) return "overdue";
   }
   return invoice.status;
 }
 
 function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
+  return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(amount);
 }
 
 function formatDate(dateStr: string): string {
-  return new Date(dateStr + 'T00:00:00').toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
+  return new Date(dateStr + "T00:00:00").toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
   });
 }
 
@@ -43,10 +43,10 @@ interface Props {
 
 export default function InvoiceListClient({ invoices }: Props) {
   const router = useRouter();
-  const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState<InvoiceStatus | 'all'>('all');
-  const [sortField, setSortField] = useState<SortField>('due_date');
-  const [sortDir, setSortDir] = useState<SortDir>('desc');
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<InvoiceStatus | "all">("all");
+  const [sortField, setSortField] = useState<SortField>("due_date");
+  const [sortDir, setSortDir] = useState<SortDir>("desc");
   const [deleteTarget, setDeleteTarget] = useState<Invoice | null>(null);
   const [deleting, setDeleting] = useState(false);
 
@@ -63,7 +63,7 @@ export default function InvoiceListClient({ invoices }: Props) {
   const filtered = useMemo(() => {
     let result = enriched;
 
-    if (statusFilter !== 'all') {
+    if (statusFilter !== "all") {
       result = result.filter((inv) => inv.displayStatus === statusFilter);
     }
 
@@ -71,34 +71,33 @@ export default function InvoiceListClient({ invoices }: Props) {
       const q = search.toLowerCase();
       result = result.filter(
         (inv) =>
-          inv.invoice_number.toLowerCase().includes(q) ||
-          inv.client_name.toLowerCase().includes(q)
+          inv.invoice_number.toLowerCase().includes(q) || inv.client_name.toLowerCase().includes(q)
       );
     }
 
     result.sort((a, b) => {
       let cmp = 0;
       switch (sortField) {
-        case 'invoice_number':
+        case "invoice_number":
           cmp = a.invoice_number.localeCompare(b.invoice_number);
           break;
-        case 'client_name':
+        case "client_name":
           cmp = a.client_name.localeCompare(b.client_name);
           break;
-        case 'amount':
+        case "amount":
           cmp = a.amount - b.amount;
           break;
-        case 'issue_date':
+        case "issue_date":
           cmp = new Date(a.issue_date).getTime() - new Date(b.issue_date).getTime();
           break;
-        case 'due_date':
+        case "due_date":
           cmp = new Date(a.due_date).getTime() - new Date(b.due_date).getTime();
           break;
-        case 'status':
+        case "status":
           cmp = a.displayStatus.localeCompare(b.displayStatus);
           break;
       }
-      return sortDir === 'asc' ? cmp : -cmp;
+      return sortDir === "asc" ? cmp : -cmp;
     });
 
     return result;
@@ -106,21 +105,21 @@ export default function InvoiceListClient({ invoices }: Props) {
 
   function toggleSort(field: SortField) {
     if (sortField === field) {
-      setSortDir(sortDir === 'asc' ? 'desc' : 'asc');
+      setSortDir(sortDir === "asc" ? "desc" : "asc");
     } else {
       setSortField(field);
-      setSortDir('asc');
+      setSortDir("asc");
     }
   }
 
   function sortIndicator(field: SortField) {
     if (sortField !== field) return null;
-    return sortDir === 'asc' ? ' ↑' : ' ↓';
+    return sortDir === "asc" ? " ↑" : " ↓";
   }
 
   async function markAsPaid(invoice: Invoice) {
     try {
-      const res = await fetch(`/api/invoices/${invoice.id}/pay`, { method: 'POST' });
+      const res = await fetch(`/api/invoices/${invoice.id}/pay`, { method: "POST" });
       if (res.ok) router.refresh();
     } catch {
       // noop — toast could be added
@@ -131,7 +130,7 @@ export default function InvoiceListClient({ invoices }: Props) {
     if (!deleteTarget) return;
     setDeleting(true);
     try {
-      const res = await fetch(`/api/invoices/${deleteTarget.id}`, { method: 'DELETE' });
+      const res = await fetch(`/api/invoices/${deleteTarget.id}`, { method: "DELETE" });
       if (res.ok) {
         setDeleteTarget(null);
         router.refresh();
@@ -144,7 +143,7 @@ export default function InvoiceListClient({ invoices }: Props) {
   }
 
   function isOverdue(dueDate: string, status: InvoiceStatus) {
-    if (status !== 'sent' && status !== 'overdue') return false;
+    if (status !== "sent" && status !== "overdue") return false;
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const due = new Date(dueDate);
@@ -177,13 +176,13 @@ export default function InvoiceListClient({ invoices }: Props) {
         </div>
         <select
           value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value as InvoiceStatus | 'all')}
+          onChange={(e) => setStatusFilter(e.target.value as InvoiceStatus | "all")}
           className="h-10 px-3 pr-8 border border-neutral-200 rounded-md text-sm text-neutral-700 bg-white appearance-none focus:outline-none focus:border-primary-500 focus:ring-3 focus:ring-primary-100"
           style={{
             backgroundImage:
               "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236B7280' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E\")",
-            backgroundRepeat: 'no-repeat',
-            backgroundPosition: 'right 12px center',
+            backgroundRepeat: "no-repeat",
+            backgroundPosition: "right 12px center",
           }}
         >
           <option value="all">All Status</option>
@@ -199,8 +198,14 @@ export default function InvoiceListClient({ invoices }: Props) {
         {filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 px-8 text-center">
             <div className="w-16 h-16 bg-primary-50 rounded-full flex items-center justify-center mb-6 text-primary-500">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-8 h-8">
-                {search || statusFilter !== 'all' ? (
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                className="w-8 h-8"
+              >
+                {search || statusFilter !== "all" ? (
                   <>
                     <circle cx="11" cy="11" r="8" />
                     <line x1="21" y1="21" x2="16.65" y2="16.65" />
@@ -215,18 +220,20 @@ export default function InvoiceListClient({ invoices }: Props) {
               </svg>
             </div>
             <h3 className="text-lg font-semibold text-neutral-900 mb-2">
-              {search || statusFilter !== 'all' ? 'No invoices match your search' : 'No invoices yet'}
+              {search || statusFilter !== "all"
+                ? "No invoices match your search"
+                : "No invoices yet"}
             </h3>
             <p className="text-sm text-neutral-500 mb-6 max-w-sm">
-              {search || statusFilter !== 'all'
-                ? 'Try different keywords or clear filters to see all invoices.'
+              {search || statusFilter !== "all"
+                ? "Try different keywords or clear filters to see all invoices."
                 : "When you create your first invoice, it'll appear here. It only takes about 2 minutes."}
             </p>
-            {search || statusFilter !== 'all' ? (
+            {search || statusFilter !== "all" ? (
               <button
                 onClick={() => {
-                  setSearch('');
-                  setStatusFilter('all');
+                  setSearch("");
+                  setStatusFilter("all");
                 }}
                 className="px-5 h-10 inline-flex items-center justify-center gap-2 rounded-md text-sm font-medium bg-white text-neutral-700 border border-neutral-200 hover:bg-neutral-50 transition-colors"
               >
@@ -248,12 +255,12 @@ export default function InvoiceListClient({ invoices }: Props) {
                 <tr>
                   {(
                     [
-                      ['invoice_number', 'Invoice #'],
-                      ['client_name', 'Client'],
-                      ['amount', 'Amount'],
-                      ['issue_date', 'Issue Date'],
-                      ['due_date', 'Due Date'],
-                      ['status', 'Status'],
+                      ["invoice_number", "Invoice #"],
+                      ["client_name", "Client"],
+                      ["amount", "Amount"],
+                      ["issue_date", "Issue Date"],
+                      ["due_date", "Due Date"],
+                      ["status", "Status"],
                     ] as const
                   ).map(([field, label]) => (
                     <th
@@ -290,8 +297,8 @@ export default function InvoiceListClient({ invoices }: Props) {
                     <td
                       className={`px-4 py-3 text-sm border-b border-neutral-100 ${
                         isOverdue(inv.due_date, inv.displayStatus)
-                          ? 'text-error-500 font-medium'
-                          : ''
+                          ? "text-error-500 font-medium"
+                          : ""
                       }`}
                     >
                       {formatDate(inv.due_date)}
@@ -301,13 +308,19 @@ export default function InvoiceListClient({ invoices }: Props) {
                     </td>
                     <td className="px-4 py-3 border-b border-neutral-100">
                       <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
-                        {inv.displayStatus !== 'paid' && (
+                        {inv.displayStatus !== "paid" && (
                           <button
                             onClick={() => markAsPaid(inv)}
                             className="w-8 h-8 flex items-center justify-center rounded-md text-neutral-600 hover:bg-neutral-100 transition-colors"
                             title="Mark as paid"
                           >
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4">
+                            <svg
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              className="w-4 h-4"
+                            >
                               <polyline points="20 6 9 17 4 12" />
                             </svg>
                           </button>
@@ -317,7 +330,13 @@ export default function InvoiceListClient({ invoices }: Props) {
                           className="w-8 h-8 flex items-center justify-center rounded-md text-neutral-600 hover:bg-error-50 hover:text-error-500 transition-colors"
                           title="Delete invoice"
                         >
-                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4">
+                          <svg
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            className="w-4 h-4"
+                          >
                             <polyline points="3 6 5 6 21 6" />
                             <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
                           </svg>
@@ -330,7 +349,8 @@ export default function InvoiceListClient({ invoices }: Props) {
             </table>
             <div className="flex items-center justify-between px-4 py-3 border-t border-neutral-200 text-sm text-neutral-500">
               <span>
-                Showing {filtered.length} of {invoices.length} invoice{invoices.length !== 1 ? 's' : ''}
+                Showing {filtered.length} of {invoices.length} invoice
+                {invoices.length !== 1 ? "s" : ""}
               </span>
             </div>
           </>
@@ -350,7 +370,7 @@ export default function InvoiceListClient({ invoices }: Props) {
             <div className="p-6">
               <h2 className="text-xl font-semibold mb-2">Delete Invoice</h2>
               <p className="text-sm text-neutral-500">
-                Are you sure you want to delete{' '}
+                Are you sure you want to delete{" "}
                 <span className="font-medium text-neutral-900">{deleteTarget.invoice_number}</span>?
                 This action cannot be undone.
               </p>
@@ -367,7 +387,7 @@ export default function InvoiceListClient({ invoices }: Props) {
                 disabled={deleting}
                 className="px-5 h-10 inline-flex items-center justify-center gap-2 rounded-md text-sm font-medium bg-error-500 text-white hover:bg-error-600 transition-colors disabled:opacity-50"
               >
-                {deleting ? 'Deleting...' : 'Delete'}
+                {deleting ? "Deleting..." : "Delete"}
               </button>
             </div>
           </div>

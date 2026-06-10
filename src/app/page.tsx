@@ -1,23 +1,23 @@
-'use client';
+"use client";
 
-import { FormEvent, useState } from 'react';
+import { FormEvent, useState } from "react";
 
 export default function Home() {
-  const [email, setEmail] = useState('');
-  const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
-  const [emailError, setEmailError] = useState('');
+  const [email, setEmail] = useState("");
+  const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
+  const [emailError, setEmailError] = useState("");
 
   const validateEmail = (value: string) => {
     if (!value) {
-      setEmailError('Email is required');
+      setEmailError("Email is required");
       return false;
     }
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(value)) {
-      setEmailError('Please enter a valid email address');
+      setEmailError("Please enter a valid email address");
       return false;
     }
-    setEmailError('');
+    setEmailError("");
     return true;
   };
 
@@ -32,23 +32,23 @@ export default function Home() {
       return;
     }
 
-    setStatus('submitting');
+    setStatus("submitting");
     try {
-      const response = await fetch('/api/waitlist', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/waitlist", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
       });
 
       if (response.ok) {
-        setStatus('success');
-        setEmail('');
-        setTimeout(() => setStatus('idle'), 3000);
+        setStatus("success");
+        setEmail("");
+        setTimeout(() => setStatus("idle"), 3000);
       } else {
-        setStatus('error');
+        setStatus("error");
       }
     } catch {
-      setStatus('error');
+      setStatus("error");
     }
   };
 
@@ -64,7 +64,8 @@ export default function Home() {
             InvoiceFlow turns your work into paid invoices. No more admin, just money.
           </p>
           <p className="text-2xl md:text-3xl font-bold text-primary-600 mb-8">
-            $7/mo. <span className="text-neutral-600 font-normal text-lg md:text-xl">Start free.</span>
+            $7/mo.{" "}
+            <span className="text-neutral-600 font-normal text-lg md:text-xl">Start free.</span>
           </p>
         </div>
 
@@ -77,34 +78,32 @@ export default function Home() {
                 value={email}
                 onChange={(e) => {
                   setEmail(e.target.value);
-                  setEmailError('');
+                  setEmailError("");
                 }}
                 onBlur={handleBlur}
                 placeholder="you@example.com"
-                disabled={status === 'submitting'}
+                disabled={status === "submitting"}
                 className="w-full px-4 py-3 md:py-3.5 border border-neutral-200 rounded-lg text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all disabled:bg-neutral-50"
                 aria-label="Email address"
                 minLength={5}
                 maxLength={254}
               />
-              {emailError && (
-                <p className="text-error-500 text-sm mt-1">{emailError}</p>
-              )}
+              {emailError && <p className="text-error-500 text-sm mt-1">{emailError}</p>}
             </div>
             <button
               type="submit"
-              disabled={status === 'submitting' || status === 'success'}
+              disabled={status === "submitting" || status === "success"}
               className="w-full px-6 py-3 md:py-3.5 bg-primary-600 text-white font-semibold rounded-lg hover:bg-primary-700 disabled:bg-primary-400 transition-colors min-h-[44px] flex items-center justify-center"
             >
-              {status === 'submitting' && 'Getting early access...'}
-              {status === 'idle' && 'Get Early Access'}
-              {status === 'success' && '✓ Check your email'}
-              {status === 'error' && 'Try again'}
+              {status === "submitting" && "Getting early access..."}
+              {status === "idle" && "Get Early Access"}
+              {status === "success" && "✓ Check your email"}
+              {status === "error" && "Try again"}
             </button>
           </form>
 
           {/* Success Message */}
-          {status === 'success' && (
+          {status === "success" && (
             <div className="mt-4 p-3 bg-success-50 border border-success-500 rounded-lg">
               <p className="text-success-600 text-sm font-medium">
                 Welcome to InvoiceFlow! Check your email for early access details.
@@ -113,7 +112,7 @@ export default function Home() {
           )}
 
           {/* Error Message */}
-          {status === 'error' && (
+          {status === "error" && (
             <div className="mt-4 p-3 bg-error-50 border border-error-500 rounded-lg">
               <p className="text-error-600 text-sm font-medium">
                 Something went wrong. Please try again.

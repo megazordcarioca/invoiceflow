@@ -1,55 +1,55 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { createClient } from '@/lib/supabase/client';
-import { useRouter, useParams } from 'next/navigation';
-import Link from 'next/link';
-import type { LineItem } from '@/types/invoice';
+import { useState, useEffect } from "react";
+import { createClient } from "@/lib/supabase/client";
+import { useRouter, useParams } from "next/navigation";
+import Link from "next/link";
+import type { LineItem } from "@/types/invoice";
 
 export default function EditInvoicePage() {
   const router = useRouter();
   const params = useParams();
   const id = params.id as string;
   const supabase = createClient();
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
 
   const [form, setForm] = useState({
-    client_name: '',
-    client_email: '',
-    client_address: '',
-    issue_date: '',
-    due_date: '',
-    notes: '',
+    client_name: "",
+    client_email: "",
+    client_address: "",
+    issue_date: "",
+    due_date: "",
+    notes: "",
     line_items: [] as LineItem[],
   });
-  const [invoiceStatus, setInvoiceStatus] = useState<string>('draft');
-  const isSent = invoiceStatus === 'sent';
+  const [invoiceStatus, setInvoiceStatus] = useState<string>("draft");
+  const isSent = invoiceStatus === "sent";
 
   useEffect(() => {
     const load = async () => {
       const { data } = await supabase
-        .from('invoices')
-        .select('*, invoice_line_items(*)')
-        .eq('id', id)
+        .from("invoices")
+        .select("*, invoice_line_items(*)")
+        .eq("id", id)
         .single();
       if (data) {
         setInvoiceStatus(data.status);
         setForm({
           client_name: data.client_name,
           client_email: data.client_email,
-          client_address: data.client_address || '',
+          client_address: data.client_address || "",
           issue_date: data.issue_date,
           due_date: data.due_date,
-          notes: data.notes || '',
+          notes: data.notes || "",
           line_items: data.invoice_line_items || [],
         });
       }
       setFetching(false);
     };
     load();
-  }, [id]);
+  }, [id, supabase]);
 
   const updateLine = (index: number, field: keyof LineItem, value: string | number) => {
     const items = [...form.line_items];
@@ -57,7 +57,11 @@ export default function EditInvoicePage() {
     setForm({ ...form, line_items: items });
   };
 
-  const addLine = () => setForm({ ...form, line_items: [...form.line_items, { description: '', quantity: 1, unit_price: 0 }] });
+  const addLine = () =>
+    setForm({
+      ...form,
+      line_items: [...form.line_items, { description: "", quantity: 1, unit_price: 0 }],
+    });
   const removeLine = (index: number) => {
     if (form.line_items.length <= 1) return;
     setForm({ ...form, line_items: form.line_items.filter((_, i) => i !== index) });
@@ -67,18 +71,18 @@ export default function EditInvoicePage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError("");
     setLoading(true);
 
     const res = await fetch(`/api/invoices/${id}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(form),
     });
 
     const data = await res.json();
     if (!res.ok) {
-      setError(data.error || 'Failed to update');
+      setError(data.error || "Failed to update");
       setLoading(false);
       return;
     }
@@ -100,8 +104,15 @@ export default function EditInvoicePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex items-center gap-6">
-              <Link href="/dashboard" className="text-xl font-bold text-gray-900">InvoiceFlow</Link>
-              <Link href="/invoices" className="text-sm font-medium text-gray-600 hover:text-gray-900">Invoices</Link>
+              <Link href="/dashboard" className="text-xl font-bold text-gray-900">
+                InvoiceFlow
+              </Link>
+              <Link
+                href="/invoices"
+                className="text-sm font-medium text-gray-600 hover:text-gray-900"
+              >
+                Invoices
+              </Link>
             </div>
           </div>
         </div>
@@ -112,13 +123,17 @@ export default function EditInvoicePage() {
 
         {isSent && (
           <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-            <p className="text-yellow-800 font-medium">This invoice has been sent. Client info and line items are locked.</p>
+            <p className="text-yellow-800 font-medium">
+              This invoice has been sent. Client info and line items are locked.
+            </p>
             <p className="text-yellow-700 text-sm mt-1">You can still edit notes and due date.</p>
           </div>
         )}
 
         {error && (
-          <div className="mb-6 p-3 bg-red-50 border border-red-200 text-red-700 rounded text-sm">{error}</div>
+          <div className="mb-6 p-3 bg-red-50 border border-red-200 text-red-700 rounded text-sm">
+            {error}
+          </div>
         )}
 
         <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow p-6 space-y-6">
@@ -195,7 +210,13 @@ export default function EditInvoicePage() {
             <div className="flex justify-between items-center mb-3">
               <label className="block text-sm font-medium text-gray-700">Line Items *</label>
               {!isSent && (
-                <button type="button" onClick={addLine} className="text-sm text-blue-600 hover:underline">+ Add Item</button>
+                <button
+                  type="button"
+                  onClick={addLine}
+                  className="text-sm text-blue-600 hover:underline"
+                >
+                  + Add Item
+                </button>
               )}
             </div>
             <div className="space-y-3">
@@ -207,7 +228,7 @@ export default function EditInvoicePage() {
                     required
                     disabled={isSent}
                     value={item.description}
-                    onChange={(e) => updateLine(i, 'description', e.target.value)}
+                    onChange={(e) => updateLine(i, "description", e.target.value)}
                     className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
                   />
                   <input
@@ -217,7 +238,7 @@ export default function EditInvoicePage() {
                     min="1"
                     disabled={isSent}
                     value={item.quantity}
-                    onChange={(e) => updateLine(i, 'quantity', parseInt(e.target.value) || 1)}
+                    onChange={(e) => updateLine(i, "quantity", parseInt(e.target.value) || 1)}
                     className="w-20 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
                   />
                   <input
@@ -227,24 +248,43 @@ export default function EditInvoicePage() {
                     min="0"
                     step="0.01"
                     disabled={isSent}
-                    value={item.unit_price || ''}
-                    onChange={(e) => updateLine(i, 'unit_price', parseFloat(e.target.value) || 0)}
+                    value={item.unit_price || ""}
+                    onChange={(e) => updateLine(i, "unit_price", parseFloat(e.target.value) || 0)}
                     className="w-28 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
                   />
-                  <span className="py-2 text-sm text-gray-600 w-24 text-right">${(item.quantity * item.unit_price).toFixed(2)}</span>
+                  <span className="py-2 text-sm text-gray-600 w-24 text-right">
+                    ${(item.quantity * item.unit_price).toFixed(2)}
+                  </span>
                   {!isSent && form.line_items.length > 1 && (
-                    <button type="button" onClick={() => removeLine(i)} className="py-2 text-red-500 hover:text-red-700">×</button>
+                    <button
+                      type="button"
+                      onClick={() => removeLine(i)}
+                      className="py-2 text-red-500 hover:text-red-700"
+                    >
+                      ×
+                    </button>
                   )}
                 </div>
               ))}
             </div>
-            <div className="mt-3 text-right text-lg font-bold text-gray-900">Total: ${total.toFixed(2)}</div>
+            <div className="mt-3 text-right text-lg font-bold text-gray-900">
+              Total: ${total.toFixed(2)}
+            </div>
           </div>
 
           <div className="flex justify-end gap-3">
-            <Link href={`/invoices/${id}`} className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">Cancel</Link>
-            <button type="submit" disabled={loading} className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50">
-              {loading ? 'Saving...' : 'Save Changes'}
+            <Link
+              href={`/invoices/${id}`}
+              className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+            >
+              Cancel
+            </Link>
+            <button
+              type="submit"
+              disabled={loading}
+              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+            >
+              {loading ? "Saving..." : "Save Changes"}
             </button>
           </div>
         </form>

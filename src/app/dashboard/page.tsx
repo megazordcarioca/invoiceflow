@@ -1,10 +1,10 @@
-import { createClient } from '@/lib/supabase/server';
-import { redirect } from 'next/navigation';
-import Link from 'next/link';
-import StatusBadge from '@/components/StatusBadge';
-import { InvoiceStatus } from '@/types/invoice';
+import { createClient } from "@/lib/supabase/server";
+import { redirect } from "next/navigation";
+import Link from "next/link";
+import StatusBadge from "@/components/StatusBadge";
+import { InvoiceStatus } from "@/types/invoice";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 async function getDashboardData(userId: string) {
   const supabase = createClient();
@@ -13,10 +13,10 @@ async function getDashboardData(userId: string) {
   const startOfMonth = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1)).toISOString();
 
   const { data: invoices, error } = await supabase
-    .from('invoices')
-    .select('*, invoice_line_items(*)')
-    .eq('user_id', userId)
-    .order('created_at', { ascending: false });
+    .from("invoices")
+    .select("*, invoice_line_items(*)")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false });
 
   if (error) throw error;
 
@@ -38,23 +38,23 @@ async function getDashboardData(userId: string) {
       0
     );
 
-    if (invoice.status === 'paid') {
+    if (invoice.status === "paid") {
       totalEarned += subtotal;
       if (new Date(invoice.updated_at) >= new Date(startOfMonth)) {
         monthToDateEarned += subtotal;
       }
-    } else if (invoice.status === 'sent') {
+    } else if (invoice.status === "sent") {
       if (new Date(invoice.due_date) < now) {
         overdue += subtotal;
       } else {
         pending += subtotal;
       }
-    } else if (invoice.status === 'overdue') {
+    } else if (invoice.status === "overdue") {
       overdue += subtotal;
     }
   }
 
-  const recentInvoices = (invoices || []).slice(0, 5).map(invoice => ({
+  const recentInvoices = (invoices || []).slice(0, 5).map((invoice) => ({
     id: invoice.id,
     invoice_number: invoice.invoice_number,
     client_name: invoice.client_name,
@@ -86,16 +86,16 @@ export default async function DashboardPage() {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect('/login');
+    redirect("/login");
   }
 
   const { stats, tierInfo, recentInvoices } = await getDashboardData(user.id);
 
   const handleSignOut = async () => {
-    'use server';
+    "use server";
     const supabase = createClient();
     await supabase.auth.signOut();
-    redirect('/login');
+    redirect("/login");
   };
 
   return (
@@ -111,10 +111,7 @@ export default async function DashboardPage() {
             <div className="flex items-center gap-4">
               <span className="text-sm text-gray-600">{user.email}</span>
               <form action={handleSignOut}>
-                <button
-                  type="submit"
-                  className="text-sm text-gray-600 hover:text-gray-900"
-                >
+                <button type="submit" className="text-sm text-gray-600 hover:text-gray-900">
                   Sign out
                 </button>
               </form>
@@ -128,9 +125,7 @@ export default async function DashboardPage() {
 
         {tierInfo.invoicesThisMonth === tierInfo.tierLimit - 1 && (
           <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <p className="text-blue-800 font-medium">
-              1 invoice remaining this month
-            </p>
+            <p className="text-blue-800 font-medium">1 invoice remaining this month</p>
             <p className="text-blue-700 text-sm mt-1">
               You&apos;ve used {tierInfo.invoicesThisMonth} of {tierInfo.tierLimit} free invoices.
             </p>
@@ -150,14 +145,13 @@ export default async function DashboardPage() {
 
         {tierInfo.invoicesThisMonth > tierInfo.tierLimit && (
           <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-            <p className="text-red-800 font-medium">
-              Free tier limit exceeded
-            </p>
+            <p className="text-red-800 font-medium">Free tier limit exceeded</p>
             <p className="text-red-700 text-sm mt-1">
-              You&apos;ve used {tierInfo.invoicesThisMonth} invoices this month. 
+              You&apos;ve used {tierInfo.invoicesThisMonth} invoices this month.
               <Link href="/pricing" className="underline font-medium ml-1">
                 Upgrade to Pro
-              </Link> for unlimited invoices.
+              </Link>{" "}
+              for unlimited invoices.
             </p>
           </div>
         )}
@@ -165,24 +159,18 @@ export default async function DashboardPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <div className="bg-white p-6 rounded-lg shadow">
             <h3 className="text-sm font-medium text-gray-500">Total Earned</h3>
-            <p className="mt-2 text-3xl font-bold text-gray-900">
-              ${stats.totalEarned.toFixed(2)}
-            </p>
+            <p className="mt-2 text-3xl font-bold text-gray-900">${stats.totalEarned.toFixed(2)}</p>
             <p className="mt-1 text-sm text-gray-500">
               Month-to-date: ${stats.monthToDateEarned.toFixed(2)}
             </p>
           </div>
           <div className="bg-white p-6 rounded-lg shadow">
             <h3 className="text-sm font-medium text-gray-500">Pending</h3>
-            <p className="mt-2 text-3xl font-bold text-gray-900">
-              ${stats.pending.toFixed(2)}
-            </p>
+            <p className="mt-2 text-3xl font-bold text-gray-900">${stats.pending.toFixed(2)}</p>
           </div>
           <div className="bg-white p-6 rounded-lg shadow">
             <h3 className="text-sm font-medium text-gray-500">Overdue</h3>
-            <p className="mt-2 text-3xl font-bold text-gray-900">
-              ${stats.overdue.toFixed(2)}
-            </p>
+            <p className="mt-2 text-3xl font-bold text-gray-900">${stats.overdue.toFixed(2)}</p>
           </div>
         </div>
 
@@ -193,7 +181,7 @@ export default async function DashboardPage() {
           <div className="p-6">
             {recentInvoices.length === 0 ? (
               <p className="text-gray-500 text-center py-8">
-                No invoices yet.{' '}
+                No invoices yet.{" "}
                 <Link href="/invoices/new" className="text-blue-600 hover:underline">
                   Create your first invoice
                 </Link>
