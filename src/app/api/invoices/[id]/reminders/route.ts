@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { Resend } from "resend";
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
+const RESEND_FROM_EMAIL = process.env.RESEND_FROM_EMAIL || "InvoiceFlow <onboarding@resend.dev>";
 const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
 
 export async function POST(_request: Request, { params }: { params: { id: string } }) {
@@ -65,8 +66,14 @@ export async function POST(_request: Request, { params }: { params: { id: string
 
   if (resend) {
     try {
+      console.log(
+        "[reminders] Sending reminder email for invoice",
+        params.id,
+        "to",
+        invoice.client_email
+      );
       await resend.emails.send({
-        from: "InvoiceFlow <onboarding@resend.dev>",
+        from: RESEND_FROM_EMAIL,
         to: invoice.client_email,
         subject: `Payment Reminder: ${invoice.invoice_number} from ${freelancerName}`,
         html: `
@@ -79,10 +86,12 @@ export async function POST(_request: Request, { params }: { params: { id: string
           <p>Thank you,<br>${freelancerName}</p>
         `,
       });
-    } catch {
+    } catch (err) {
+      console.error("[reminders] Failed to send email for invoice", params.id, err);
       status = "failed";
     }
   } else {
+    console.warn("[reminders] RESEND_API_KEY not configured — marking reminder as failed");
     status = "failed";
   }
 

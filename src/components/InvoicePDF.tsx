@@ -28,7 +28,14 @@ export async function generateInvoicePDF(invoice: InvoiceData): Promise<Buffer> 
   const margin = 50;
   let y = page.getHeight() - margin;
 
-  const drawText = (text: string, x: number, yPos: number, font: typeof helvetica, size: number, color = rgb(0, 0, 0)) => {
+  const drawText = (
+    text: string,
+    x: number,
+    yPos: number,
+    font: typeof helvetica,
+    size: number,
+    color = rgb(0, 0, 0)
+  ) => {
     page.drawText(text, { x, y: yPos, font, size, color });
   };
 
@@ -86,7 +93,14 @@ export async function generateInvoicePDF(invoice: InvoiceData): Promise<Buffer> 
   // Total
   y -= 10;
   drawText("Total:", margin + 320, y, helveticaBold, 12);
-  drawText(`$${invoice.total.toFixed(2)}`, margin + 380, y, helveticaBold, 12, rgb(0.15, 0.39, 0.92));
+  drawText(
+    `$${invoice.total.toFixed(2)}`,
+    margin + 380,
+    y,
+    helveticaBold,
+    12,
+    rgb(0.15, 0.39, 0.92)
+  );
 
   // Notes
   if (invoice.notes) {
