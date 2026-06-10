@@ -3,18 +3,26 @@ name: Deploy to Vercel
 on:
   push:
     branches: [main]
-  pull_request:
-    branches: [main]
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.actor != 'dependabot[bot]')
+    if: github.event_name == 'push'
     steps:
       - uses: actions/checkout@v4
-      - uses: amondnet/vercel-action@v25
+      - uses: actions/setup-node@v4
         with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: team_wdgHc2sjHegc2ZqCgDGV6mAm
-          vercel-project-id: prj_JbOpIEnFNvBeT8s1iCW2VlBmzg8Z
-          vercel-args: ${{ github.event_name == 'push' && '--prod' || '' }}
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - name: Deploy to Vercel
+        run: |
+          if [ -z "$VERCEL_TOKEN" ]; then
+            echo "VERCEL_TOKEN not set — skipping deploy"
+            exit 0
+          fi
+          npx vercel deploy --prod --token "$VERCEL_TOKEN" --yes
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: team_wdgHc2sjHegc2ZqCgDGV6mAm
+          VERCEL_PROJECT_ID: prj_JbOpIEnFNvBeT8s1iCW2VlBmzg8Z
