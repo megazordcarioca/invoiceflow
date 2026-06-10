@@ -11,7 +11,7 @@ import type { LineItem } from "@/types/invoice";
 export default function EditInvoicePage() {
   const router = useRouter();
   const params = useParams();
-  const id = params.id as string;
+  const id = (params?.id as string) ?? "";
   const supabase = createClient();
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
