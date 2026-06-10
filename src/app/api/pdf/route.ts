@@ -1,8 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
-import { renderToBuffer } from "@react-pdf/renderer";
-import React from "react";
-import { InvoicePDF } from "@/components/InvoicePDF";
+import { generateInvoicePDF } from "@/components/InvoicePDF";
+
+export const dynamic = "force-dynamic";
 
 export async function GET(request: Request) {
   const supabase = createClient();
@@ -33,16 +33,12 @@ export async function GET(request: Request) {
       0
     ) || 0;
 
-  const pdfElement = React.createElement(InvoicePDF, {
-    invoice: {
-      ...invoice,
-      total,
-      freelancer_name: profile?.name || user.email || "",
-      freelancer_company: profile?.company || "",
-    },
+  const buffer = await generateInvoicePDF({
+    ...invoice,
+    total,
+    freelancer_name: profile?.name || user.email || "",
+    freelancer_company: profile?.company || "",
   });
-
-  const buffer = await renderToBuffer(pdfElement);
 
   const clientName = invoice.client_name.replace(/[^a-zA-Z0-9]/g, "_");
   return new NextResponse(new Uint8Array(buffer), {

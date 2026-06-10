@@ -1,126 +1,105 @@
-import React from "react";
-import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
+import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 
-const styles = StyleSheet.create({
-  page: { padding: 40, fontSize: 10, fontFamily: "Helvetica" },
-  header: { flexDirection: "row", justifyContent: "space-between", marginBottom: 30 },
-  title: { fontSize: 24, fontWeight: "bold", color: "#2563eb" },
-  section: { marginBottom: 20 },
-  label: { fontSize: 9, color: "#6b7280", marginBottom: 2 },
-  value: { fontSize: 11, marginBottom: 8 },
-  row: { flexDirection: "row", justifyContent: "space-between", marginBottom: 4 },
-  tableHeader: {
-    flexDirection: "row",
-    borderBottomWidth: 1,
-    borderBottomColor: "#e5e7eb",
-    paddingBottom: 6,
-    marginBottom: 6,
-  },
-  tableRow: { flexDirection: "row", paddingBottom: 6, marginBottom: 6 },
-  colDesc: { width: "45%" },
-  colQty: { width: "15%", textAlign: "right" },
-  colPrice: { width: "20%", textAlign: "right" },
-  colTotal: { width: "20%", textAlign: "right" },
-  totalSection: { borderTopWidth: 1, borderTopColor: "#e5e7eb", paddingTop: 10, marginTop: 10 },
-  totalLabel: { fontSize: 12, fontWeight: "bold" },
-  totalValue: { fontSize: 14, fontWeight: "bold", color: "#2563eb" },
-  footer: { marginTop: 40, paddingTop: 20, borderTopWidth: 1, borderTopColor: "#e5e7eb" },
-  footerText: { fontSize: 9, color: "#6b7280", textAlign: "center" },
-});
-
-interface Props {
-  invoice: {
-    invoice_number: string;
-    client_name: string;
-    client_email: string;
-    client_address: string | null;
-    issue_date: string;
-    due_date: string;
-    notes: string | null;
-    total: number;
-    freelancer_name: string;
-    freelancer_company: string;
-    invoice_line_items: Array<{
-      description: string;
-      quantity: number;
-      unit_price: number;
-    }>;
-  };
+interface InvoiceData {
+  invoice_number: string;
+  client_name: string;
+  client_email: string;
+  client_address: string | null;
+  issue_date: string;
+  due_date: string;
+  notes: string | null;
+  total: number;
+  freelancer_name: string;
+  freelancer_company: string;
+  invoice_line_items: Array<{
+    description: string;
+    quantity: number;
+    unit_price: number;
+  }>;
 }
 
-export function InvoicePDF({ invoice }: Props) {
-  return (
-    <Document>
-      <Page size="A4" style={styles.page}>
-        <View style={styles.header}>
-          <View>
-            <Text style={styles.title}>INVOICE</Text>
-            <Text style={styles.value}>{invoice.invoice_number}</Text>
-          </View>
-          <View style={{ textAlign: "right" }}>
-            <Text style={styles.label}>FROM</Text>
-            <Text style={styles.value}>{invoice.freelancer_name}</Text>
-            {invoice.freelancer_company && (
-              <Text style={styles.value}>{invoice.freelancer_company}</Text>
-            )}
-          </View>
-        </View>
+export async function generateInvoicePDF(invoice: InvoiceData): Promise<Buffer> {
+  const pdfDoc = await PDFDocument.create();
+  const helvetica = await pdfDoc.embedFont(StandardFonts.Helvetica);
+  const helveticaBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
 
-        <View style={styles.section}>
-          <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-            <View>
-              <Text style={styles.label}>BILL TO</Text>
-              <Text style={styles.value}>{invoice.client_name}</Text>
-              <Text style={styles.value}>{invoice.client_email}</Text>
-              {invoice.client_address && <Text style={styles.value}>{invoice.client_address}</Text>}
-            </View>
-            <View style={{ textAlign: "right" }}>
-              <View style={styles.row}>
-                <Text style={styles.label}>Issue Date: </Text>
-                <Text style={styles.value}>{invoice.issue_date}</Text>
-              </View>
-              <View style={styles.row}>
-                <Text style={styles.label}>Due Date: </Text>
-                <Text style={styles.value}>{invoice.due_date}</Text>
-              </View>
-            </View>
-          </View>
-        </View>
+  const page = pdfDoc.addPage();
+  const { width } = page.getSize();
+  const margin = 50;
+  let y = page.getHeight() - margin;
 
-        <View style={styles.section}>
-          <View style={styles.tableHeader}>
-            <Text style={styles.colDesc}>Description</Text>
-            <Text style={styles.colQty}>Qty</Text>
-            <Text style={styles.colPrice}>Unit Price</Text>
-            <Text style={styles.colTotal}>Total</Text>
-          </View>
-          {invoice.invoice_line_items.map((item, i) => (
-            <View key={i} style={styles.tableRow}>
-              <Text style={styles.colDesc}>{item.description}</Text>
-              <Text style={styles.colQty}>{item.quantity}</Text>
-              <Text style={styles.colPrice}>${item.unit_price.toFixed(2)}</Text>
-              <Text style={styles.colTotal}>${(item.quantity * item.unit_price).toFixed(2)}</Text>
-            </View>
-          ))}
-          <View style={styles.totalSection}>
-            <View style={{ flexDirection: "row", justifyContent: "flex-end" }}>
-              <Text style={styles.totalLabel}>Total: </Text>
-              <Text style={styles.totalValue}>${invoice.total.toFixed(2)}</Text>
-            </View>
-          </View>
-        </View>
+  const drawText = (text: string, x: number, yPos: number, font: typeof helvetica, size: number, color = rgb(0, 0, 0)) => {
+    page.drawText(text, { x, y: yPos, font, size, color });
+  };
 
-        {invoice.notes && (
-          <View style={styles.section}>
-            <Text style={styles.label}>NOTES</Text>
-            <Text style={styles.value}>{invoice.notes}</Text>
-          </View>
-        )}
+  drawText("INVOICE", margin, y, helveticaBold, 24, rgb(0.15, 0.39, 0.92));
+  y -= 25;
+  drawText(invoice.invoice_number, margin, y, helvetica, 11);
+  y -= 15;
 
-        <View style={styles.footer}>
-          <Text style={styles.footerText}>Generated by InvoiceFlow</Text>
-        </View>
-      </Page>
-    </Document>
-  );
+  // From section (right side)
+  const fromX = width - 200;
+  drawText("FROM", fromX, y, helveticaBold, 9, rgb(0.42, 0.45, 0.5));
+  y -= 12;
+  drawText(invoice.freelancer_name, fromX, y, helvetica, 11);
+  if (invoice.freelancer_company) {
+    y -= 12;
+    drawText(invoice.freelancer_company, fromX, y, helvetica, 11);
+  }
+  y -= 30;
+
+  // Bill To
+  drawText("BILL TO", margin, y, helveticaBold, 9, rgb(0.42, 0.45, 0.5));
+  y -= 12;
+  drawText(invoice.client_name, margin, y, helvetica, 11);
+  y -= 12;
+  drawText(invoice.client_email, margin, y, helvetica, 11);
+  if (invoice.client_address) {
+    y -= 12;
+    drawText(invoice.client_address, margin, y, helvetica, 11);
+  }
+
+  // Dates
+  const datesX = width - 200;
+  drawText("Issue Date:", datesX, y + 36, helvetica, 9, rgb(0.42, 0.45, 0.5));
+  drawText(invoice.issue_date, datesX + 70, y + 36, helvetica, 11);
+  drawText("Due Date:", datesX, y + 24, helvetica, 9, rgb(0.42, 0.45, 0.5));
+  drawText(invoice.due_date, datesX + 70, y + 24, helvetica, 11);
+  y -= 40;
+
+  // Table header
+  drawText("Description", margin, y, helveticaBold, 9, rgb(0.42, 0.45, 0.5));
+  drawText("Qty", margin + 250, y, helveticaBold, 9, rgb(0.42, 0.45, 0.5));
+  drawText("Unit Price", margin + 300, y, helveticaBold, 9, rgb(0.42, 0.45, 0.5));
+  drawText("Total", margin + 380, y, helveticaBold, 9, rgb(0.42, 0.45, 0.5));
+  y -= 15;
+
+  // Line items
+  for (const item of invoice.invoice_line_items) {
+    drawText(item.description.substring(0, 35), margin, y, helvetica, 10);
+    drawText(item.quantity.toString(), margin + 250, y, helvetica, 10);
+    drawText(`$${item.unit_price.toFixed(2)}`, margin + 300, y, helvetica, 10);
+    drawText(`$${(item.quantity * item.unit_price).toFixed(2)}`, margin + 380, y, helvetica, 10);
+    y -= 15;
+  }
+
+  // Total
+  y -= 10;
+  drawText("Total:", margin + 320, y, helveticaBold, 12);
+  drawText(`$${invoice.total.toFixed(2)}`, margin + 380, y, helveticaBold, 12, rgb(0.15, 0.39, 0.92));
+
+  // Notes
+  if (invoice.notes) {
+    y -= 30;
+    drawText("NOTES", margin, y, helveticaBold, 9, rgb(0.42, 0.45, 0.5));
+    y -= 12;
+    drawText(invoice.notes, margin, y, helvetica, 10);
+  }
+
+  // Footer
+  y -= 40;
+  drawText("Generated by InvoiceFlow", width / 2 - 60, y, helvetica, 9, rgb(0.42, 0.45, 0.5));
+
+  const pdfBytes = await pdfDoc.save();
+  return Buffer.from(pdfBytes);
 }
