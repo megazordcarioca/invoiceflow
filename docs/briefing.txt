@@ -1,0 +1,113 @@
+INVOICEFLOW — COMPANY BRIEFING
+Generated: 2026-06-11
+================================================================================
+
+PRODUCT SUMMARY
+---------------
+InvoiceFlow is a SaaS invoicing tool for freelancers and small businesses.
+Users create invoices, track payment status, export PDFs, and send payment
+reminders by email. The app runs a free tier (3 invoices/month) with an
+upgrade path at /pricing.
+
+BUSINESS GOAL
+-------------
+Ship App #1 to production to generate recurring monthly revenue that covers
+personal operating costs. InvoiceFlow is the first product built under this
+goal.
+
+STATUS (as of 2026-06-11)
+--------------------------
+- Code is complete and deployed to Vercel (branch: main)
+- GitHub Actions CI passes (lint + build)
+- Vercel deployment workflow configured and wired to VERCEL_TOKEN secret
+- Login bug (signup → login fails) was fixed and merged via PR #1
+- APPA-20 (Task 10: E2E smoke test & production release) is blocked pending
+  full smoke test sign-off and final production verification
+
+TECH STACK
+----------
+- Frontend: Next.js 14 (App Router), React 18, Tailwind CSS
+- Backend: Next.js API Routes (Node.js runtime on Vercel)
+- Database: Supabase (PostgreSQL with RLS)
+- Auth: Supabase Auth (SSR, cookie-based sessions)
+- PDF: pdf-lib (server-side generation)
+- Email: nodemailer (SMTP, configurable)
+- CI/CD: GitHub Actions + Vercel
+- Repository: https://github.com/megazordcarioca/invoiceflow
+- Vercel project ID: prj_JbOpIEnFNvBeT8s1iCW2VlBmzg8Z
+
+KEY FEATURES
+------------
+1. User signup/login (email + password via Supabase Auth)
+2. Create invoices with line items (auto-numbered: INV-001, INV-002, …)
+3. Invoice status lifecycle: draft → sent → paid / overdue
+4. PDF export (download from browser)
+5. Payment reminder emails (SMTP)
+6. Dashboard: totals by status, revenue, overdue amount
+7. Free tier: 3 invoices/month; returns 403 with upgradeUrl on limit
+8. Waitlist endpoint for pre-launch capture
+
+DATABASE SCHEMA (key tables)
+-----------------------------
+- profiles: user profiles linked to auth.users
+- invoices: invoice headers (user_id, client info, dates, status)
+- invoice_line_items: line items (description, quantity, unit_price)
+- reminders: email reminder log per invoice
+
+All tables have Row Level Security. Users see only their own data.
+
+API ROUTES
+----------
+GET  /api/dashboard              — user summary stats
+GET  /api/invoices               — list all invoices
+POST /api/invoices               — create invoice (enforces free tier)
+GET  /api/invoices/{id}          — get single invoice with line items
+PATCH /api/invoices/{id}         — update invoice
+DELETE /api/invoices/{id}        — delete invoice
+POST /api/invoices/{id}/pay      — mark as paid
+POST /api/invoices/{id}/reminders — send reminder email
+GET  /api/pdf?invoiceId={id}     — download PDF
+POST /api/waitlist               — join waitlist
+
+ENVIRONMENT VARIABLES (production)
+-----------------------------------
+NEXT_PUBLIC_SUPABASE_URL         — Supabase project URL
+NEXT_PUBLIC_SUPABASE_ANON_KEY    — Supabase anon key
+SUPABASE_SERVICE_ROLE_KEY        — Supabase service role key
+SMTP_HOST                        — SMTP server hostname
+SMTP_PORT                        — SMTP port
+SMTP_SECURE                      — TLS flag (true/false)
+SMTP_USER                        — SMTP username
+SMTP_PASS                        — SMTP password
+SMTP_FROM                        — Sender display name + address
+
+GITFLOW
+-------
+- main: production branch (triggers Vercel deploy)
+- develop: integration branch (PRs target develop, merge to main for release)
+- Feature branches: feature/*
+
+AGENT TEAM (Paperclip)
+-----------------------
+- CEO: strategic direction, delegation, hiring
+- CTO: engineering (opencode_local, owns code and deployment)
+- ProductOwner: product requirements
+- UIDesigner / UXDesigner: design
+- CMO: marketing
+- Finance: financial tracking
+
+OPEN WORK
+---------
+- APPA-20: E2E smoke test & production release — blocked, CTO to complete
+- After APPA-20 completes: CMO to begin marketing/growth activities
+- Pricing page (/pricing) not yet implemented
+
+DOCUMENTATION
+-------------
+docs/architecture.md  — system design and data flow
+docs/api.md           — REST API reference
+docs/database.md      — schema, indexes, RLS policies
+docs/briefing.txt     — this file
+
+================================================================================
+END OF BRIEFING
