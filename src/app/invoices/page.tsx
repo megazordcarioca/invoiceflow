@@ -20,7 +20,7 @@ export default async function InvoicesPage() {
   return (
     <div className="flex min-h-screen bg-neutral-50">
       <main className="flex-1 ml-56 flex flex-col">
-        <header className="h-14 bg-white border-b border-neutral-200 flex items-center justify-between px-6 sticky top-0 z-5">
+        <header className="h-14 bg-white border-b border-neutral-200 flex items-center justify-between px-6 sticky top-0 z-10">
           <div />
           <div className="flex items-center gap-4">
             <div className="w-8 h-8 rounded-full bg-primary-100 text-primary-600 flex items-center justify-center text-sm font-semibold">

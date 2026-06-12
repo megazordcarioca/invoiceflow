@@ -10,6 +10,7 @@
   --color-primary-500: #3b82f6;
   --color-primary-600: #2563eb;
   --color-primary-700: #1d4ed8;
+  --color-primary-800: #1e40af;
 
   --color-success-50: #f0fdf4;
   --color-success-500: #22c55e;
@@ -18,10 +19,14 @@
   --color-warning-50: #fffbeb;
   --color-warning-500: #f59e0b;
   --color-warning-600: #d97706;
+  --color-warning-700: #b45309;
+  --color-warning-800: #92400e;
 
   --color-error-50: #fef2f2;
   --color-error-500: #ef4444;
   --color-error-600: #dc2626;
+  --color-error-700: #b91c1c;
+  --color-error-800: #991b1b;
 
   --color-neutral-50: #f9fafb;
   --color-neutral-100: #f3f4f6;
@@ -71,7 +76,7 @@
 }
 
 body {
-  font-family: var(--font-family);
+  font-family: var(--font-inter), var(--font-family);
   font-size: var(--text-base);
   color: var(--color-neutral-900);
   background: var(--color-neutral-50);

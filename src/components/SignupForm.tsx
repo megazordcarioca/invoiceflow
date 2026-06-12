@@ -57,19 +57,21 @@ export default function SignupForm() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+    <div className="min-h-screen flex items-center justify-center bg-neutral-50">
       <div className="w-full max-w-md p-8 bg-white rounded-lg shadow-md">
-        <h1 className="text-2xl font-bold text-center mb-6">Create your account</h1>
+        <h1 className="text-2xl font-bold text-center mb-6 text-neutral-900">
+          Create your account
+        </h1>
 
         {error && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded text-sm">
+          <div className="mb-4 p-3 bg-error-50 border border-error-500 text-error-600 rounded text-sm">
             {error}
           </div>
         )}
 
         <form onSubmit={handleEmailSignup} className="space-y-4">
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="email" className="block text-sm font-medium text-neutral-700 mb-1">
               Email
             </label>
             <input
@@ -78,12 +80,12 @@ export default function SignupForm() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-neutral-200 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 text-neutral-900 placeholder-neutral-400"
             />
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="password" className="block text-sm font-medium text-neutral-700 mb-1">
               Password
             </label>
             <input
@@ -93,15 +95,15 @@ export default function SignupForm() {
               onChange={(e) => setPassword(e.target.value)}
               required
               minLength={8}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-neutral-200 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 text-neutral-900 placeholder-neutral-400"
             />
-            <p className="mt-1 text-xs text-gray-500">Minimum 8 characters</p>
+            <p className="mt-1 text-xs text-neutral-500">Minimum 8 characters</p>
           </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-2 px-4 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full py-2 px-4 bg-primary-600 text-white rounded-md hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             {loading ? "Creating account..." : "Create account"}
           </button>
@@ -110,7 +112,7 @@ export default function SignupForm() {
         <div className="mt-4">
           <button
             onClick={handleGoogleSignup}
-            className="w-full py-2 px-4 border border-gray-300 rounded-md hover:bg-gray-50 flex items-center justify-center gap-2"
+            className="w-full py-2 px-4 border border-neutral-200 rounded-md hover:bg-neutral-50 flex items-center justify-center gap-2 transition-colors text-neutral-700"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
               <path
@@ -134,9 +136,9 @@ export default function SignupForm() {
           </button>
         </div>
 
-        <p className="mt-6 text-center text-sm text-gray-600">
+        <p className="mt-6 text-center text-sm text-neutral-600">
           Already have an account?{" "}
-          <Link href="/login" className="text-blue-600 hover:underline">
+          <Link href="/login" className="text-primary-600 hover:underline font-medium">
             Sign in
           </Link>
         </p>

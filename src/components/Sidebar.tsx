@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 
 const navItems = [
   {
-    href: "/",
+    href: "/dashboard",
     label: "Dashboard",
     icon: (
       <svg
@@ -19,6 +19,40 @@ const navItems = [
         <rect x="14" y="3" width="7" height="7" rx="1" />
         <rect x="3" y="14" width="7" height="7" rx="1" />
         <rect x="14" y="14" width="7" height="7" rx="1" />
+      </svg>
+    ),
+  },
+  {
+    href: "/dashboard/dre",
+    label: "DRE Mensal",
+    icon: (
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        className="w-5 h-5"
+      >
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+        <polyline points="7 10 12 15 17 10" />
+        <line x1="12" y1="15" x2="12" y2="3" />
+      </svg>
+    ),
+  },
+  {
+    href: "/dashboard/ai-costs",
+    label: "AI Costs",
+    icon: (
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        className="w-5 h-5"
+      >
+        <path d="M12 20V10" />
+        <path d="M18 20V4" />
+        <path d="M6 20v-4" />
       </svg>
     ),
   },
@@ -66,7 +100,7 @@ export default function Sidebar() {
       <div className="px-6 mb-8 font-bold text-lg text-primary-600">InvoiceFlow</div>
       <nav className="flex-1">
         {navItems.map((item) => {
-          const isActive = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
+          const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
           return (
             <Link
               key={item.href}
@@ -84,7 +118,10 @@ export default function Sidebar() {
         })}
       </nav>
       <div className="px-6 pt-4 border-t border-neutral-200">
-        <div className="flex items-center gap-2 px-4 py-3 bg-primary-50 rounded-md text-primary-600 text-sm font-medium cursor-pointer hover:bg-primary-100 transition-colors">
+        <Link
+          href="/pricing"
+          className="flex items-center gap-2 px-4 py-3 bg-primary-50 rounded-md text-primary-600 text-sm font-medium cursor-pointer hover:bg-primary-100 transition-colors"
+        >
           <svg
             viewBox="0 0 24 24"
             fill="none"
@@ -94,8 +131,8 @@ export default function Sidebar() {
           >
             <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
           </svg>
-          Upgrade to Pro
-        </div>
+          Upgrade Plan
+        </Link>
       </div>
     </aside>
   );

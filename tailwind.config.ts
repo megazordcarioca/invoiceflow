@@ -18,6 +18,7 @@ const config: Config = {
           500: "var(--color-primary-500)",
           600: "var(--color-primary-600)",
           700: "var(--color-primary-700)",
+          800: "var(--color-primary-800)",
         },
         success: {
           50: "var(--color-success-50)",
@@ -28,11 +29,15 @@ const config: Config = {
           50: "var(--color-warning-50)",
           500: "var(--color-warning-500)",
           600: "var(--color-warning-600)",
+          700: "var(--color-warning-700)",
+          800: "var(--color-warning-800)",
         },
         error: {
           50: "var(--color-error-50)",
           500: "var(--color-error-500)",
           600: "var(--color-error-600)",
+          700: "var(--color-error-700)",
+          800: "var(--color-error-800)",
         },
         neutral: {
           50: "var(--color-neutral-50)",
