@@ -1,36 +1,130 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# InvoiceFlow
 
-## Getting Started
+SaaS invoicing tool for freelancers and small businesses. Create, send, and track invoices with PDF export and payment reminders.
 
-First, run the development server:
+**Live app:** [invoiceflow on Vercel](https://invoiceflow.vercel.app)
+**GitHub:** [megazordcarioca/invoiceflow](https://github.com/megazordcarioca/invoiceflow)
+
+## Features
+
+- **Invoice management** — create invoices with line items, track status (draft → sent → paid/overdue)
+- **PDF export** — generate PDF invoices via pdf-lib
+- **Payment reminders** — send email reminders via SMTP (nodemailer)
+- **Dashboard** — summary of open, overdue, and paid invoices
+- **Free tier** — 3 invoices per month per user; upgrade path at `/pricing`
+- **Auth** — email/password via Supabase Auth with automatic profile creation
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Frontend | Next.js 14 (App Router), React 18, Tailwind CSS |
+| Backend | Next.js API Routes (edge/node) |
+| Database | Supabase (PostgreSQL) |
+| Auth | Supabase Auth (SSR) |
+| PDF | pdf-lib |
+| Email | nodemailer (SMTP) |
+| Deployment | Vercel |
+| CI | GitHub Actions |
+
+## Local Development
+
+### Prerequisites
+
+- Node.js 20+
+- [Supabase CLI](https://supabase.com/docs/guides/cli)
+
+### Setup
+
+```bash
+git clone git@github.com:megazordcarioca/invoiceflow.git
+cd invoiceflow
+npm install
+```
+
+Start local Supabase:
+
+```bash
+npx supabase start
+# Copy the anon key and URL from the output
+```
+
+Configure environment:
+
+```bash
+cp .env.example .env.local
+# Fill in NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY from supabase start output
+# Optionally configure SMTP_* vars for email reminders
+```
+
+Run migrations:
+
+```bash
+npx supabase db reset
+```
+
+Start the app:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+# Open http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Scripts
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| Command | Description |
+|---|---|
+| `npm run dev` | Start dev server |
+| `npm run build` | Production build |
+| `npm run lint` | ESLint check |
+| `npm run format` | Prettier format |
+| `npm run format:check` | Prettier check (CI) |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Environment Variables
 
-## Learn More
+| Variable | Required | Description |
+|---|---|---|
+| `NEXT_PUBLIC_SUPABASE_URL` | Yes | Supabase project URL |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Yes | Supabase anon key |
+| `SUPABASE_SERVICE_ROLE_KEY` | Yes | Supabase service role key |
+| `SMTP_HOST` | No | SMTP server hostname |
+| `SMTP_PORT` | No | SMTP port (default 587) |
+| `SMTP_SECURE` | No | TLS (true/false) |
+| `SMTP_USER` | No | SMTP username |
+| `SMTP_PASS` | No | SMTP password |
+| `SMTP_FROM` | No | From address (e.g. `InvoiceFlow <noreply@invoiceflow.app>`) |
 
-To learn more about Next.js, take a look at the following resources:
+## Deployment
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+The app deploys to Vercel automatically on merge to `main` via `.github/workflows/deploy.yml`. Requires `VERCEL_TOKEN` set in GitHub repository secrets.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+CI runs on all PRs via `.github/workflows/ci.yml` (lint + build).
 
-## Deploy on Vercel
+## Project Structure
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```
+src/
+  app/
+    api/           # API routes
+      dashboard/   # GET summary stats
+      invoices/    # CRUD + PDF + reminders
+      pdf/         # PDF generation
+      waitlist/    # Waitlist signup
+    auth/          # Auth callback handler
+    dashboard/     # Dashboard page
+    invoices/      # Invoice list and detail pages
+    login/         # Login page
+    signup/        # Signup page
+  components/      # Shared UI components
+  lib/
+    supabase/      # Supabase client (server + client)
+  types/           # TypeScript types
+supabase/
+  migrations/      # SQL migration files
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Documentation
+
+- [Architecture](docs/architecture.md) — system design and data flow
+- [API Reference](docs/api.md) — REST API routes
+- [Database Schema](docs/database.md) — tables, indexes, RLS policies
