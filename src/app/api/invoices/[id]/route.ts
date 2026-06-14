@@ -1,11 +1,8 @@
-import { createClient } from "@/lib/supabase/server";
-import { NextResponse } from "next/server";
+import { resolveAuth } from "@/lib/supabase/mobile";
+import { NextRequest, NextResponse } from "next/server";
 
-export async function GET(_request: Request, { params }: { params: { id: string } }) {
-  const supabase = createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+  const { supabase, user } = await resolveAuth(request);
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { data: invoice, error } = await supabase
@@ -19,11 +16,8 @@ export async function GET(_request: Request, { params }: { params: { id: string 
   return NextResponse.json(invoice);
 }
 
-export async function PATCH(request: Request, { params }: { params: { id: string } }) {
-  const supabase = createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
+  const { supabase, user } = await resolveAuth(request);
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { data: existing } = await supabase
@@ -81,11 +75,8 @@ export async function PATCH(request: Request, { params }: { params: { id: string
   return NextResponse.json(invoice);
 }
 
-export async function DELETE(_request: Request, { params }: { params: { id: string } }) {
-  const supabase = createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+  const { supabase, user } = await resolveAuth(request);
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { error } = await supabase

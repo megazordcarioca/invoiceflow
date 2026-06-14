@@ -1,11 +1,8 @@
-import { createClient } from "@/lib/supabase/server";
-import { NextResponse } from "next/server";
+import { resolveAuth } from "@/lib/supabase/mobile";
+import { NextRequest, NextResponse } from "next/server";
 
-export async function GET() {
-  const supabase = createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+export async function GET(request: NextRequest) {
+  const { supabase, user } = await resolveAuth(request);
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const now = new Date();

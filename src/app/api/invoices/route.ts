@@ -1,13 +1,10 @@
-import { createClient } from "@/lib/supabase/server";
-import { NextResponse } from "next/server";
+import { resolveAuth } from "@/lib/supabase/mobile";
+import { NextRequest, NextResponse } from "next/server";
 
 const FREE_TIER_LIMIT = 3;
 
-export async function GET() {
-  const supabase = createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+export async function GET(request: NextRequest) {
+  const { supabase, user } = await resolveAuth(request);
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { data: invoices, error } = await supabase
@@ -20,11 +17,8 @@ export async function GET() {
   return NextResponse.json(invoices);
 }
 
-export async function POST(request: Request) {
-  const supabase = createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+export async function POST(request: NextRequest) {
+  const { supabase, user } = await resolveAuth(request);
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const now = new Date();
