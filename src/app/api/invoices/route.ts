@@ -6,7 +6,6 @@ import type { AsaasPlan } from "@/lib/asaas";
 
 const VALID_STATUSES: InvoiceStatus[] = ["draft", "sent", "paid", "overdue"];
 const VALID_SORT_BY = ["created_at", "due_date", "client_name"] as const;
-const VALID_SORT_ORDER = ["asc", "desc"] as const;
 
 export async function GET(request: NextRequest) {
   const { supabase, user } = await resolveAuth(request);
@@ -36,10 +35,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Invalid status value" }, { status: 400 });
   }
 
-  let query = supabase
-    .from("invoices")
-    .select("*", { count: "exact" })
-    .eq("user_id", user.id);
+  let query = supabase.from("invoices").select("*", { count: "exact" }).eq("user_id", user.id);
 
   if (status) query = query.eq("status", status);
   if (date_from) query = query.gte("issue_date", date_from);
@@ -73,14 +69,15 @@ export async function POST(request: NextRequest) {
     .eq("user_id", user.id)
     .single();
 
-  const plan: AsaasPlan = sub && sub.status === "active" && sub.plan !== "free"
-    ? (sub.plan as AsaasPlan)
-    : "free";
+  const plan: AsaasPlan =
+    sub && sub.status === "active" && sub.plan !== "free" ? (sub.plan as AsaasPlan) : "free";
   const invoiceLimit = PLAN_LIMITS[plan].invoicesPerMonth;
 
   if (invoiceLimit !== Infinity) {
     const now = new Date();
-    const startOfMonth = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1)).toISOString();
+    const startOfMonth = new Date(
+      Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1)
+    ).toISOString();
 
     const { count } = await supabase
       .from("invoices")

@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
+import Sidebar from "@/components/Sidebar";
 import InvoiceListClient from "@/components/InvoiceListClient";
 
 export const dynamic = "force-dynamic";
@@ -19,6 +20,7 @@ export default async function InvoicesPage() {
 
   return (
     <div className="flex min-h-screen bg-neutral-50">
+      <Sidebar />
       <main className="flex-1 ml-56 flex flex-col">
         <header className="h-14 bg-white border-b border-neutral-200 flex items-center justify-between px-6 sticky top-0 z-5">
           <div />
