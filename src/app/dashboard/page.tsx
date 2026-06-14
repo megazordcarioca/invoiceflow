@@ -85,13 +85,6 @@ export default async function DashboardPage() {
 
   const { stats, tierInfo, recentInvoices } = await getDashboardData(user.id);
 
-  const handleSignOut = async () => {
-    "use server";
-    const supabase = createClient();
-    await supabase.auth.signOut();
-    redirect("/login");
-  };
-
   return (
     <div className="flex min-h-screen bg-neutral-50">
       <Sidebar />
@@ -103,7 +96,7 @@ export default async function DashboardPage() {
             <div className="w-8 h-8 rounded-full bg-primary-100 text-primary-600 flex items-center justify-center text-sm font-semibold">
               {user.email?.charAt(0).toUpperCase() || "U"}
             </div>
-            <form action={handleSignOut}>
+            <form action="/api/auth/signout" method="POST">
               <button
                 type="submit"
                 className="text-sm text-neutral-500 hover:text-neutral-900 transition-colors"

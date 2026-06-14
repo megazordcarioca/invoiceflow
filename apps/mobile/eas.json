@@ -1,0 +1,29 @@
+{
+  "cli": {
+    "version": ">= 7.0.0"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal"
+    },
+    "preview": {
+      "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_SUPABASE_URL": "@supabase_url",
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "@supabase_anon_key",
+        "EXPO_PUBLIC_API_BASE_URL": "@api_base_url"
+      }
+    },
+    "production": {
+      "env": {
+        "EXPO_PUBLIC_SUPABASE_URL": "@supabase_url",
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "@supabase_anon_key",
+        "EXPO_PUBLIC_API_BASE_URL": "@api_base_url"
+      }
+    }
+  },
+  "submit": {
+    "production": {}
+  }
+}

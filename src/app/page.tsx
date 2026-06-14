@@ -60,10 +60,10 @@ export default function Home() {
       <section className="px-4 md:px-8 py-12 md:py-20 max-w-6xl mx-auto">
         <div className="text-center mb-12">
           <h1 className="text-3xl md:text-5xl font-bold text-neutral-900 mb-4 md:mb-6 text-balance">
-            Get paid faster. Invoice in 60 seconds.
+            Create, send, and track invoices in 60 seconds.
           </h1>
           <p className="text-lg md:text-xl text-neutral-600 mb-8 text-balance">
-            InvoiceFlow turns your work into paid invoices. No more admin, just money.
+            InvoiceFlow turns your work into professional invoices. No more admin hassle.
           </p>
           <p className="text-2xl md:text-3xl font-bold text-primary-600 mb-8">
             $7/mo.{" "}
@@ -130,7 +130,6 @@ export default function Home() {
           </p>
 
           <div className="flex flex-wrap justify-center items-center gap-6 md:gap-8 mb-8">
-            <div className="text-neutral-600 text-sm font-medium">Stripe Partner</div>
             <div className="text-neutral-600 text-sm font-medium">SOC 2 Certified</div>
             <div className="text-neutral-600 text-sm font-medium">GDPR Compliant</div>
           </div>
@@ -170,7 +169,7 @@ export default function Home() {
             <div className="bg-white p-6 md:p-8 rounded-lg border border-neutral-200">
               <h3 className="text-lg font-semibold text-neutral-900 mb-2">Secure & Reliable</h3>
               <p className="text-neutral-600 text-sm md:text-base">
-                Bank-level security with Stripe integration for safe payments.
+                Bank-level security to keep your data and invoices safe.
               </p>
             </div>
           </div>
@@ -183,7 +182,7 @@ export default function Home() {
           Start creating invoices in seconds
         </h2>
         <p className="text-neutral-600 text-lg mb-8">
-          Join hundreds of freelancers getting paid faster
+          Join hundreds of freelancers managing their invoicing with ease
         </p>
         <button className="px-8 py-3 md:py-4 bg-primary-600 text-white font-semibold rounded-lg hover:bg-primary-700 transition-colors inline-flex items-center justify-center min-h-[44px]">
           Get Early Access for $7/mo

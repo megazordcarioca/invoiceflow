@@ -11,7 +11,7 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: "InvoiceFlow",
-  description: "Simple invoicing for freelancers",
+  description: "Create, send, and track invoices for freelancers and small businesses",
 };
 
 export default function RootLayout({

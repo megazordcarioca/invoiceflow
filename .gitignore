@@ -19,14 +19,15 @@
 # misc
 .DS_Store
 *.pem
-
-# debug
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-# local env files
+*.log
+.env
 .env*.local
+!.env.example
+
+# editors
+.idea/
+*.iml
+.vscode/
 
 # vercel
 .vercel
@@ -41,3 +42,11 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Expo/Mobile
+.expo/
+dist/
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
