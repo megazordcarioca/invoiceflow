@@ -23,6 +23,18 @@ export interface Invoice {
   line_items?: LineItem[];
 }
 
+export interface PaginationMeta {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
+
+export interface PaginatedInvoiceResponse {
+  data: Invoice[];
+  meta: PaginationMeta;
+}
+
 export interface InvoiceFormData {
   client_name: string;
   client_email: string;

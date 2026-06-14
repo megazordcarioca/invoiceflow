@@ -1,20 +1,66 @@
 import { resolveAuth } from "@/lib/supabase/mobile";
 import { NextRequest, NextResponse } from "next/server";
+import type { InvoiceStatus } from "@/types/invoice";
 
 const FREE_TIER_LIMIT = 3;
+
+const VALID_STATUSES: InvoiceStatus[] = ["draft", "sent", "paid", "overdue"];
+const VALID_SORT_BY = ["created_at", "due_date", "client_name"] as const;
+const VALID_SORT_ORDER = ["asc", "desc"] as const;
 
 export async function GET(request: NextRequest) {
   const { supabase, user } = await resolveAuth(request);
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { data: invoices, error } = await supabase
+  const sp = request.nextUrl.searchParams;
+
+  // Pagination
+  const page = Math.max(1, parseInt(sp.get("page") ?? "1", 10) || 1);
+  const limit = Math.min(100, Math.max(1, parseInt(sp.get("limit") ?? "20", 10) || 20));
+  const offset = (page - 1) * limit;
+
+  // Filters
+  const status = sp.get("status") as InvoiceStatus | null;
+  const date_from = sp.get("date_from");
+  const date_to = sp.get("date_to");
+  const q = sp.get("q");
+
+  // Sort
+  const sort_by = VALID_SORT_BY.includes(sp.get("sort_by") as never)
+    ? (sp.get("sort_by") as (typeof VALID_SORT_BY)[number])
+    : "created_at";
+  const ascending = sp.get("sort_order") === "asc";
+
+  // Validate status if provided
+  if (status && !VALID_STATUSES.includes(status)) {
+    return NextResponse.json({ error: "Invalid status value" }, { status: 400 });
+  }
+
+  let query = supabase
     .from("invoices")
-    .select("*")
-    .eq("user_id", user.id)
-    .order("created_at", { ascending: false });
+    .select("*", { count: "exact" })
+    .eq("user_id", user.id);
+
+  if (status) query = query.eq("status", status);
+  if (date_from) query = query.gte("issue_date", date_from);
+  if (date_to) query = query.lte("issue_date", date_to);
+  if (q) query = query.ilike("client_name", `%${q}%`);
+
+  const { data, error, count } = await query
+    .order(sort_by, { ascending })
+    .range(offset, offset + limit - 1);
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json(invoices);
+
+  const total = count ?? 0;
+  const totalPages = Math.ceil(total / limit);
+
+  const response = NextResponse.json({
+    data,
+    meta: { page, limit, total, totalPages },
+  });
+  response.headers.set("X-Total-Count", String(total));
+  return response;
 }
 
 export async function POST(request: NextRequest) {
