@@ -1,0 +1,47 @@
+{
+  "expo": {
+    "name": "InvoiceFlow",
+    "slug": "invoiceflow",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "scheme": "invoiceflow",
+    "splash": {
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.darkfactory.invoiceflow",
+      "infoPlist": {
+        "NSCameraUsageDescription": "Used to scan invoices via OCR."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#ffffff"
+      },
+      "package": "com.darkfactory.invoiceflow",
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            {
+              "scheme": "invoiceflow",
+              "host": "*",
+              "pathPrefix": "/"
+            }
+          ],
+          "category": ["BROWSABLE", "DEFAULT"]
+        }
+      ]
+    },
+    "plugins": ["expo-secure-store"],
+    "extra": {
+      "supabaseUrl": "",
+      "supabaseAnonKey": "",
+      "apiBaseUrl": ""
+    }
+  }
+}
