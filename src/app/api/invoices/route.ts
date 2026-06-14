@@ -1,8 +1,8 @@
 import { resolveAuth } from "@/lib/supabase/mobile";
 import { NextRequest, NextResponse } from "next/server";
 import type { InvoiceStatus } from "@/types/invoice";
-
-const FREE_TIER_LIMIT = 3;
+import { PLAN_LIMITS } from "@/lib/plans";
+import type { AsaasPlan } from "@/lib/asaas";
 
 const VALID_STATUSES: InvoiceStatus[] = ["draft", "sent", "paid", "overdue"];
 const VALID_SORT_BY = ["created_at", "due_date", "client_name"] as const;
@@ -67,27 +67,39 @@ export async function POST(request: NextRequest) {
   const { supabase, user } = await resolveAuth(request);
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const now = new Date();
-  const startOfMonth = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1)).toISOString();
-
-  const { count } = await supabase
-    .from("invoices")
-    .select("*", { count: "exact", head: true })
+  const { data: sub } = await supabase
+    .from("subscriptions")
+    .select("plan, status")
     .eq("user_id", user.id)
-    .gte("created_at", startOfMonth);
+    .single();
 
-  if (count !== null && count >= FREE_TIER_LIMIT) {
-    const remaining = Math.max(0, FREE_TIER_LIMIT - count);
-    return NextResponse.json(
-      {
-        error: "Free tier limit reached",
-        limit: FREE_TIER_LIMIT,
-        current: count,
-        remaining,
-        upgradeUrl: "/pricing",
-      },
-      { status: 403 }
-    );
+  const plan: AsaasPlan = sub && sub.status === "active" && sub.plan !== "free"
+    ? (sub.plan as AsaasPlan)
+    : "free";
+  const invoiceLimit = PLAN_LIMITS[plan].invoicesPerMonth;
+
+  if (invoiceLimit !== Infinity) {
+    const now = new Date();
+    const startOfMonth = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1)).toISOString();
+
+    const { count } = await supabase
+      .from("invoices")
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", user.id)
+      .gte("created_at", startOfMonth);
+
+    if (count !== null && count >= invoiceLimit) {
+      return NextResponse.json(
+        {
+          error: "Free tier limit reached",
+          limit: invoiceLimit,
+          current: count,
+          remaining: Math.max(0, invoiceLimit - count),
+          upgradeUrl: "/pricing",
+        },
+        { status: 403 }
+      );
+    }
   }
 
   const body = await request.json();

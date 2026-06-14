@@ -1,5 +1,7 @@
 import { resolveAuth } from "@/lib/supabase/mobile";
 import { NextRequest, NextResponse } from "next/server";
+import { PLAN_LIMITS } from "@/lib/plans";
+import type { AsaasPlan } from "@/lib/asaas";
 
 export async function GET(request: NextRequest) {
   const { supabase, user } = await resolveAuth(request);
@@ -20,7 +22,16 @@ export async function GET(request: NextRequest) {
     (inv: { created_at: string }) => new Date(inv.created_at) >= new Date(startOfMonth)
   ).length;
 
-  const FREE_TIER_LIMIT = 3;
+  const { data: sub } = await supabase
+    .from("subscriptions")
+    .select("plan, status")
+    .eq("user_id", user.id)
+    .single();
+
+  const plan: AsaasPlan = sub && sub.status === "active" && sub.plan !== "free"
+    ? (sub.plan as AsaasPlan)
+    : "free";
+  const tierLimit = PLAN_LIMITS[plan].invoicesPerMonth;
 
   let totalEarned = 0;
   let pending = 0;
@@ -72,9 +83,10 @@ export async function GET(request: NextRequest) {
       monthToDateEarned,
     },
     tierInfo: {
+      plan,
       invoicesThisMonth,
-      tierLimit: FREE_TIER_LIMIT,
-      remaining: Math.max(0, FREE_TIER_LIMIT - invoicesThisMonth),
+      tierLimit,
+      remaining: tierLimit === Infinity ? null : Math.max(0, tierLimit - invoicesThisMonth),
     },
     recentInvoices,
   });
