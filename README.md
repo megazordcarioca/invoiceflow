@@ -2,7 +2,7 @@
 
 SaaS invoicing tool for freelancers and small businesses. Create, send, and track invoices with PDF export and payment reminders.
 
-**Live app:** [invoiceflow on Vercel](https://invoiceflow.vercel.app)
+**Live app:** [invoiceflow on Vercel](https://invoiceflow-weld-three.vercel.app/)
 **GitHub:** [megazordcarioca/invoiceflow](https://github.com/megazordcarioca/invoiceflow)
 
 ## Features
