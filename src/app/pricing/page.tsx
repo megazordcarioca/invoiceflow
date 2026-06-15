@@ -76,22 +76,10 @@ export default function PricingPage() {
     }
 
     try {
-      const res = await fetch("/api/asaas/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ plan: planId, billingType: "CREDIT_CARD" }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        setError(data.error || "Failed to create subscription");
-        return;
-      }
-
+      // Payment processing is handled outside the app. Redirect to contact.
       router.push("/dashboard");
     } catch {
-      setError("Network error. Please try again.");
+      setError("Something went wrong. Please try again.");
     } finally {
       setLoading(null);
     }

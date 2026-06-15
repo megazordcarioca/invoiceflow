@@ -1,9 +1,6 @@
--- InvoiceFlow v2: Subscriptions table for Asaas integration
 create table if not exists public.subscriptions (
   id                    uuid primary key default gen_random_uuid(),
   user_id               uuid not null references public.profiles on delete cascade,
-  asaas_customer_id     text,
-  asaas_subscription_id text,
   plan                  text not null default 'free' check (plan in ('free', 'pro', 'business')),
   status                text not null default 'active' check (status in ('active', 'canceled', 'past_due', 'trialing', 'incomplete')),
   current_period_start  timestamptz,
@@ -12,7 +9,6 @@ create table if not exists public.subscriptions (
   updated_at            timestamptz not null default now()
 );
 
-comment on table public.subscriptions is 'User subscription plans, synced with Asaas.';
 
 create unique index if not exists idx_subscriptions_user_id on public.subscriptions (user_id);
 

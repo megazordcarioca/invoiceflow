@@ -2,7 +2,6 @@ import { resolveAuth } from "@/lib/supabase/mobile";
 import { NextRequest, NextResponse } from "next/server";
 import type { InvoiceStatus } from "@/types/invoice";
 import { PLAN_LIMITS } from "@/lib/plans";
-import type { AsaasPlan } from "@/lib/asaas";
 
 const VALID_STATUSES: InvoiceStatus[] = ["draft", "sent", "paid", "overdue"];
 const VALID_SORT_BY = ["created_at", "due_date", "client_name"] as const;
@@ -69,8 +68,7 @@ export async function POST(request: NextRequest) {
     .eq("user_id", user.id)
     .single();
 
-  const plan: AsaasPlan =
-    sub && sub.status === "active" && sub.plan !== "free" ? (sub.plan as AsaasPlan) : "free";
+  const plan: string = sub && sub.status === "active" && sub.plan !== "free" ? (sub.plan ?? "free") : "free";
   const invoiceLimit = PLAN_LIMITS[plan].invoicesPerMonth;
 
   if (invoiceLimit !== Infinity) {

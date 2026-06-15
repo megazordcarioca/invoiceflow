@@ -1,7 +1,6 @@
 import { resolveAuth } from "@/lib/supabase/mobile";
 import { NextRequest, NextResponse } from "next/server";
 import { PLAN_LIMITS } from "@/lib/plans";
-import type { AsaasPlan } from "@/lib/asaas";
 
 export async function GET(request: NextRequest) {
   const { supabase, user } = await resolveAuth(request);
@@ -28,8 +27,8 @@ export async function GET(request: NextRequest) {
     .eq("user_id", user.id)
     .single();
 
-  const plan: AsaasPlan = sub && sub.status === "active" && sub.plan !== "free"
-    ? (sub.plan as AsaasPlan)
+  const plan: string = sub && sub.status === "active" && sub.plan !== "free"
+    ? (sub.plan ?? "free")
     : "free";
   const tierLimit = PLAN_LIMITS[plan].invoicesPerMonth;
 

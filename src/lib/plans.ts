@@ -1,14 +1,13 @@
 import { createClient } from "@/lib/supabase/server";
-import type { AsaasPlan } from "./asaas";
 
-const PLAN_LIMITS: Record<AsaasPlan, { invoicesPerMonth: number; label: string }> = {
+const PLAN_LIMITS: Record<string, { invoicesPerMonth: number; label: string }> = {
   free: { invoicesPerMonth: 3, label: "Free" },
   pro: { invoicesPerMonth: Infinity, label: "Pro" },
   business: { invoicesPerMonth: Infinity, label: "Business" },
 };
 
 export async function getUserPlan(userId: string): Promise<{
-  plan: AsaasPlan;
+  plan: string;
   invoicesPerMonth: number;
   label: string;
 }> {
@@ -20,7 +19,7 @@ export async function getUserPlan(userId: string): Promise<{
     .eq("user_id", userId)
     .single();
 
-  const plan: AsaasPlan = sub && sub.status === "active" ? (sub.plan as AsaasPlan) : "free";
+  const plan: string = sub && sub.status === "active" ? (sub.plan ?? "free") : "free";
 
   return {
     plan,
@@ -33,7 +32,7 @@ export async function checkInvoiceLimit(userId: string): Promise<{
   allowed: boolean;
   current: number;
   limit: number;
-  plan: AsaasPlan;
+  plan: string;
   remaining: number;
 }> {
   const supabase = createClient();
@@ -56,7 +55,7 @@ export async function checkInvoiceLimit(userId: string): Promise<{
 }
 
 export async function getDashboardTierInfo(userId: string): Promise<{
-  plan: AsaasPlan;
+  plan: string;
   invoicesThisMonth: number;
   tierLimit: number;
   remaining: number;
