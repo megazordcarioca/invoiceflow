@@ -1,12 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-
-interface WaitlistEntry {
-  email: string;
-  createdAt: string;
-}
-
-// In-memory storage for the smoke test
-const waitlist: WaitlistEntry[] = [];
+import { createClient } from "@supabase/supabase-js";
 
 export async function POST(request: NextRequest) {
   try {
@@ -22,16 +15,31 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid email address" }, { status: 400 });
     }
 
+    // Use service role for anonymous inserts (RLS policy requires service role)
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      { auth: { autoRefreshToken: false, persistSession: false } }
+    );
+
     // Check if email already exists
-    if (waitlist.some((entry) => entry.email === email)) {
+    const { data: existing } = await supabase
+      .from("waitlist")
+      .select("id")
+      .eq("email", email.toLowerCase())
+      .single();
+
+    if (existing) {
       return NextResponse.json({ message: "Email already registered", email }, { status: 200 });
     }
 
-    // Add to waitlist
-    waitlist.push({
-      email,
-      createdAt: new Date().toISOString(),
-    });
+    // Insert into waitlist
+    const { error } = await supabase.from("waitlist").insert({ email: email.toLowerCase() });
+
+    if (error) {
+      console.error("Waitlist insert error:", error);
+      return NextResponse.json({ error: "Failed to register" }, { status: 500 });
+    }
 
     return NextResponse.json(
       { message: "Successfully registered for early access", email },
@@ -41,14 +49,4 @@ export async function POST(request: NextRequest) {
     console.error("Waitlist API error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
-}
-
-export async function GET() {
-  return NextResponse.json({
-    waitlistCount: waitlist.length,
-    waitlist: waitlist.map((entry) => ({
-      email: entry.email.replace(/(?<=.{2}).*(?=@)/, "***"),
-      createdAt: entry.createdAt,
-    })),
-  });
 }

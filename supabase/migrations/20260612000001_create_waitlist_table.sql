@@ -9,8 +9,15 @@ comment on table public.waitlist is 'Early access waitlist signups.';
 
 alter table if exists public.waitlist enable row level security;
 
--- Only service role can manage waitlist
+-- Allow anonymous inserts (pre-launch waitlist)
+create policy "Anonymous can insert waitlist"
+  on public.waitlist
+  for insert
+  with check (true);
+
+-- Service role can manage (select, update, delete) waitlist
 create policy "Service role can manage waitlist"
   on public.waitlist
+  for all
   using (true)
   with check (true);
