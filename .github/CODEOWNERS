@@ -1,0 +1,15 @@
+# CODEOWNERS — InvoiceFlow
+# These owners are requested for review when changes touch their paths.
+
+# Global owners (requested for all PRs)
+* @megazordcarioca
+
+# Docs ownership
+/docs/* @megazordcarioca
+
+# CI/CD ownership
+/.github/workflows/* @megazordcarioca
+/.github/CODEOWNERS @megazordcarioca
+
+# Mobile app ownership
+/apps/mobile/* @megazordcarioca

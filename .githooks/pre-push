@@ -1,0 +1,40 @@
+#!/bin/bash
+# Gitflow Compliance Hook — Pre-Push
+# Impede push direto em branches protegidas e valida nomenclatura
+# Instalar: cp .githooks/pre-push .git/hooks/ && chmod +x .git/hooks/pre-push
+
+PROTECTED_BRANCHES="^(main|develop)$"
+BRANCH_PATTERN="^(feature|fix|hotfix|release|chore)\/[A-Za-z0-9_.\/-]+$"
+RELEASE_PATTERN="^release\/v[0-9]+\.[0-9]+\.[0-9]+$"
+
+# Lê a branch local sendo enviada
+while read local_ref local_sha remote_ref remote_sha; do
+    branch_name=$(echo "$local_ref" | sed 's/refs\/heads\///')
+
+    # Pula validação para deleted branches
+    [ "$local_sha" = "0000000000000000000000000000000000000000" ] && continue
+
+    # Bloqueia push direto em branches protegidas
+    if echo "$branch_name" | grep -qE "$PROTECTED_BRANCHES"; then
+        echo ""
+        echo "⛔ BLOQUEADO: Push direto em '$branch_name' não é permitido."
+        echo "   Crie uma branch de feature e abra um Pull Request."
+        echo "   Veja docs/gitflow-compliance.md para mais detalhes."
+        echo ""
+        exit 1
+    fi
+
+    # Valida nomenclatura da branch
+    if ! echo "$branch_name" | grep -qE "$BRANCH_PATTERN" && \
+       ! echo "$branch_name" | grep -qE "$RELEASE_PATTERN"; then
+        echo ""
+        echo "⚠️  AVISO: Nome de branch '$branch_name' não segue o padrão."
+        echo "   Esperado: feature/DAR-XXX-desc, fix/DAR-XXX-desc, hotfix/DAR-XXX-desc,"
+        echo "             release/vX.Y.Z, chore/DAR-XXX-desc"
+        echo "   Veja docs/gitflow-compliance.md para mais detalhes."
+        echo ""
+        exit 1
+    fi
+done
+
+exit 0

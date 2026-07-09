@@ -1,0 +1,72 @@
+name: Gitflow Compliance Check
+
+on:
+  push:
+    branches-ignore: []
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  branch-name:
+    name: Validate branch name
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check branch naming convention
+        run: |
+          BRANCH_NAME="${{ github.head_ref || github.ref_name }}"
+
+          echo "Validating branch: $BRANCH_NAME"
+
+          # Block direct pushes to protected branches
+          if echo "$BRANCH_NAME" | grep -qE '^(main|develop)$'; then
+            echo "::error::BLOCKED: Direct push/PR to '$BRANCH_NAME' is not permitted."
+            echo "::error::Create a feature/fix/hotfix branch and open a PR to develop."
+            echo "::error::See docs/gitflow-compliance.md for details."
+            exit 1
+          fi
+
+          # Validate branch naming pattern
+          PATTERN='^(feature|fix|hotfix|release|chore)\/[A-Za-z0-9_.\/-]+$'
+          RELEASE_PATTERN='^release\/v[0-9]+\.[0-9]+\.[0-9]+$'
+
+          if ! echo "$BRANCH_NAME" | grep -qE "$PATTERN" && \
+             ! echo "$BRANCH_NAME" | grep -qE "$RELEASE_PATTERN"; then
+            echo "::error::Invalid branch name: '$BRANCH_NAME'"
+            echo "::error::Expected format: feature/DAR-XXX-desc, fix/DAR-XXX-desc, hotfix/DAR-XXX-desc,"
+            echo "::error::                release/vX.Y.Z, chore/DAR-XXX-desc"
+            echo "::error::See docs/gitflow-compliance.md for details."
+            exit 1
+          fi
+
+          echo "Branch name '$BRANCH_NAME' is valid. ✓"
+
+  commit-message:
+    name: Validate commit messages
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Check conventional commits
+        run: |
+          # For PRs, check all commits in the PR
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            COMMITS=$(git log --format="%s" origin/${{ github.base_ref }}..HEAD 2>/dev/null || git log --format="%s" HEAD~5..HEAD)
+          else
+            COMMITS=$(git log --format="%s" -5)
+          fi
+
+          PATTERN='^(feat|fix|docs|style|refactor|test|chore|ci|perf|revert)(\([a-z0-9._-]+\))?: .+$'
+
+          echo "$COMMITS" | while IFS= read -r msg; do
+            [ -z "$msg" ] && continue
+            # Allow merge commits
+            if echo "$msg" | grep -qE '^Merge '; then
+              continue
+            fi
+            if ! echo "$msg" | grep -qE "$PATTERN"; then
+              echo "::warning::Commit does not follow conventional commits: '$msg'"
+              echo "::warning::Expected format: tipo(escopo): mensagem"
+              echo "::warning::See docs/gitflow-compliance.md for details."
+            fi
+          done
