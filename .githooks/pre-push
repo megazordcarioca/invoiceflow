@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+# pre-push hook: enforces gitflow branch naming and blocks direct pushes to protected branches
+
+set -euo pipefail
+
+PROTECTED_BRANCHES="main develop"
+ALLOWED_PREFIXES="feat/ fix/ hotfix/ release/ chore/ docs/ refactor/ test/ ci/"
+
+current_branch=$(git symbolic-ref HEAD 2>/dev/null | sed 's|refs/heads/||')
+
+# Block direct pushes to protected branches
+for protected in $PROTECTED_BRANCHES; do
+  if [ "$current_branch" = "$protected" ]; then
+    echo "❌ ERROR: Direct push to '$protected' is not allowed."
+    echo "   Use a feature/fix branch and open a Pull Request."
+    exit 1
+  fi
+done
+
+# Enforce gitflow branch naming convention
+valid=false
+for prefix in $ALLOWED_PREFIXES; do
+  if [[ "$current_branch" == ${prefix}* ]]; then
+    valid=true
+    break
+  fi
+done
+
+if [ "$valid" = false ]; then
+  echo "❌ ERROR: Branch '$current_branch' does not follow gitflow naming conventions."
+  echo "   Allowed prefixes: $ALLOWED_PREFIXES"
+  echo "   Example: feat/DAR-123-my-feature"
+  exit 1
+fi
+
+echo "✅ pre-push: branch '$current_branch' passes gitflow checks."
+exit 0
