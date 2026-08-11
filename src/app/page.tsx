@@ -66,8 +66,7 @@ export default function Home() {
             InvoiceFlow turns your work into professional invoices. No more admin hassle.
           </p>
           <p className="text-2xl md:text-3xl font-bold text-primary-600 mb-8">
-            $7/mo.{" "}
-            <span className="text-neutral-600 font-normal text-lg md:text-xl">Start free.</span>
+            Free during early access
           </p>
         </div>
 
@@ -137,7 +136,7 @@ export default function Home() {
           <div className="flex flex-wrap justify-center items-center gap-4 text-xs md:text-sm text-neutral-600">
             <span>✓ No credit card required</span>
             <span className="hidden sm:inline">•</span>
-            <span>✓ 14-day free trial</span>
+            <span>✓ Free during early access</span>
             <span className="hidden sm:inline">•</span>
             <span>✓ Cancel anytime</span>
           </div>
@@ -184,9 +183,9 @@ export default function Home() {
         <p className="text-neutral-600 text-lg mb-8">
           Join hundreds of freelancers managing their invoicing with ease
         </p>
-        <button className="px-8 py-3 md:py-4 bg-primary-600 text-white font-semibold rounded-lg hover:bg-primary-700 transition-colors inline-flex items-center justify-center min-h-[44px]">
-          Get Early Access for $7/mo
-        </button>
+        <a href="/signup" className="px-8 py-3 md:py-4 bg-primary-600 text-white font-semibold rounded-lg hover:bg-primary-700 transition-colors inline-flex items-center justify-center min-h-[44px]">
+          Get Early Access
+        </a>
       </section>
     </main>
   );
