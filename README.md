@@ -40,7 +40,10 @@ SaaS invoicing tool for freelancers and small businesses. Create, send, and trac
 git clone git@github.com:megazordcarioca/invoiceflow.git
 cd invoiceflow
 npm install
+git config core.hooksPath .githooks
 ```
+
+> The last command activates the pre-push hook that enforces gitflow branch naming and blocks direct pushes to `main`/`develop`.
 
 Start local Supabase:
 
